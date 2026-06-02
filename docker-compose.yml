@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: 'postgres:18.1'
+    environment:
+      - 'POSTGRES_USER=myuser'
+      - 'POSTGRES_PASSWORD=secret'
+      - 'POSTGRES_DB=mydb'
+    ports:
+      - '5432:5432'
+    labels:
+      org.springframework.boot.jdbc.parameters: 'ssl=true&sslmode=require'
+
+  auth-service:
+    image: 'keycloak/keycloak:26.6.2'
+    container_name: auth-service
+    environment:
+      KC_HOSTNAME: localhost
+      KC_HOSTNAME_PORT: 8080
+      KC_HOSTNAME_STRICT_BACKCHANNEL: "true"
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HEALTH_ENABLED: "true"
+      KC_LOG_LEVEL: info
+    ports:
+      - '8080:8080'
+    command: start-dev
+
+  user-service:
+    build: ./user-service
+    container_name: user-service
+    ports:
+      - "8081:8081"
+
+  report-service:
+    build: ./report-service
+    container_name: report-service
+    ports:
+      - "8082:8082"
+
+  ticket-service:
+    build: ./ticket-service
+    container_name: ticket-service
+    ports:
+      - "8083:8083"
+
