@@ -6,15 +6,15 @@ services:
     environment:
       - 'POSTGRES_USER=myuser'
       - 'POSTGRES_PASSWORD=secret'
-      - 'POSTGRES_DB=mydb'
+      - 'POSTGRES_DB=shopping_db'
     ports:
       - '5432:5432'
     labels:
       org.springframework.boot.jdbc.parameters: 'ssl=true&sslmode=require'
 
-  auth-service:
+  keycloak:
     image: 'keycloak/keycloak:26.6.2'
-    container_name: auth-service
+    container_name: keycloak
     environment:
       KC_HOSTNAME: localhost
       KC_HOSTNAME_PORT: 8080
@@ -26,22 +26,72 @@ services:
     ports:
       - '8080:8080'
     command: start-dev
+    volumes:
+      - './custom-keycloak/target-public/custom-keycloak.jar:/opt/keycloak/providers/my-custom-plugin.jar'
+
+  auth-service:
+    build: ./auth-service
+    container_name: auth-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - KEYCLOAK_SERVER_URL=http://keycloak:8080
+      - KEYCLOAK_REALM=shopping
+      - KEYCLOAK_CLIENT_ID=shopping-client
+      - KEYCLOAK_CLIENT_SECRET=change-me
+      - KEYCLOAK_ADMIN_USERNAME=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+      - JWT_SECRET=bXktc2VjcmV0LWtleS1mb3ItaW50ZXJuc2hpcC1hc3NpZ25tZW50LTI1Ng==
+      - JWT_EXPIRATION_MS=3600000
+      - ANGULAR_URL=http://localhost:4200
+      - USER_SERVICE_URL=http://user-service:8081
+    ports:
+      - "8080:8084"
+    depends_on:
+      - keycloak
 
   user-service:
     build: ./user-service
     container_name: user-service
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/shopping_db
+      - SPRING_DATASOURCE_USERNAME=myuser
+      - SPRING_DATASOURCE_PASSWORD=secret
     ports:
       - "8081:8081"
+    depends_on:
+      - postgres
 
   report-service:
     build: ./report-service
     container_name: report-service
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/shopping_db
+      - SPRING_DATASOURCE_USERNAME=myuser
+      - SPRING_DATASOURCE_PASSWORD=secret
     ports:
       - "8082:8082"
+    depends_on:
+      - postgres
 
   ticket-service:
     build: ./ticket-service
     container_name: ticket-service
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/shopping_db
+      - SPRING_DATASOURCE_USERNAME=myuser
+      - SPRING_DATASOURCE_PASSWORD=secret
     ports:
       - "8083:8083"
+    depends_on:
+      - postgres
 
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    ports:
+      - "8000:8000"
+    depends_on:
+      - auth-service
+      - user-service
+      - report-service
+      - ticket-service
