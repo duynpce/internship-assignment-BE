@@ -1,0 +1,6 @@
+org\example\resource\AuthRequest.class
+org\example\resource\CustomAuthResource$1.class
+org\example\Main.class
+org\example\resource\CustomAuthResourceProviderFactory.class
+org\example\resource\CustomAuthResource.class
+org\example\resource\CustomAuthResourceProvider.class
