@@ -28,32 +28,39 @@ services:
     command: start-dev
     volumes:
       - './custom-keycloak/target-public/custom-keycloak.jar:/opt/keycloak/providers/my-custom-plugin.jar'
+      - './custom-keycloak/target-public/postgresql-42.7.11.jar:/opt/keycloak/providers/postgresql-42.7.11.jar'
 
   auth-service:
     build: ./auth-service
     container_name: auth-service
     environment:
-      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_PROFILES_ACTIVE=default
       - KEYCLOAK_SERVER_URL=http://keycloak:8080
       - KEYCLOAK_REALM=shopping
       - KEYCLOAK_CLIENT_ID=shopping-client
       - KEYCLOAK_CLIENT_SECRET=change-me
       - KEYCLOAK_ADMIN_USERNAME=admin
       - KEYCLOAK_ADMIN_PASSWORD=admin
-      - JWT_SECRET=bXktc2VjcmV0LWtleS1mb3ItaW50ZXJuc2hpcC1hc3NpZ25tZW50LTI1Ng==
-      - JWT_EXPIRATION_MS=3600000
+      - JWT_ACCESS_SECRET=bXktYWNjZXNzLXNlY3JldC1rZXktZm9yLXNob3BwaW5nLWFwcC0yNTY=
+      - JWT_REFRESH_SECRET=bXktcmVmcmVzaC1zZWNyZXQta2V5LWZvci1zaG9wcGluZy1hcHAtMjU2
+      - JWT_ACCESS_EXPIRATION_MINUTES=15
+      - JWT_REFRESH_EXPIRATION_DAY=7
       - ANGULAR_URL=http://localhost:4200
       - USER_SERVICE_URL=http://user-service:8081
     ports:
-      - "8080:8084"
+      - "8084:8084"
     depends_on:
       - keycloak
+    develop:
+      watch:
+        - action: rebuild
+          path: ./auth-service/src
 
   user-service:
     build: ./user-service
     container_name: user-service
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/shopping_db
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/shopping_db
       - SPRING_DATASOURCE_USERNAME=myuser
       - SPRING_DATASOURCE_PASSWORD=secret
     ports:
@@ -72,6 +79,10 @@ services:
       - "8082:8082"
     depends_on:
       - postgres
+    develop:
+      watch:
+        - action: rebuild
+          path: ./user-service/src
 
   ticket-service:
     build: ./ticket-service
@@ -84,6 +95,10 @@ services:
       - "8083:8083"
     depends_on:
       - postgres
+    develop:
+      watch:
+        - action: rebuild
+          path: ./ticket-service/src
 
   api-gateway:
     build: ./api-gateway
@@ -95,3 +110,7 @@ services:
       - user-service
       - report-service
       - ticket-service
+    develop:
+      watch:
+        - action: rebuild
+          path: ./api-gateway/src
