@@ -6,9 +6,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.authservice.application.command.AuthTokenCommand;
 import org.example.authservice.application.command.CallbackCommand;
+import org.example.authservice.application.mapper.AuthTokenMapper;
 import org.example.authservice.application.usecase.CallbackUseCase;
 import org.example.authservice.application.usecase.LogoutUseCase;
-import org.example.authservice.infrastructure.mapper.mapstruct.AuthMapperMapstruct;
 import org.example.authservice.infrastructure.web.dto.CallbackRequest;
 import org.example.authservice.infrastructure.web.dto.LoginRequest;
 import org.example.authservice.infrastructure.web.dto.ResponseDto;
@@ -30,15 +30,15 @@ public class AuthController {
 
     private final LoginUseCase loginUseCase;
     private final RefreshTokenUseCase refreshTokenUseCase;
-    private final AuthMapperMapstruct authMapperMapstruct;
+    private final AuthTokenMapper authTokenMapper;
     private final LogoutUseCase logoutUseCase;
     private final CallbackUseCase callbackUseCase;
 
 
     @PostMapping("/login")
     public ResponseEntity<ResponseDto<TokenResponse>> login(@Valid @RequestBody LoginRequest request, HttpServletResponse response) {
-        AuthTokenCommand token = loginUseCase.login(authMapperMapstruct.toCommand(request));
-        TokenResponse tokenDto = authMapperMapstruct.toDto(token);
+        AuthTokenCommand token = loginUseCase.login(authTokenMapper.toCommand(request));
+        TokenResponse tokenDto = authTokenMapper.toDto(token);
 
 
         response.addHeader(HttpHeaders.SET_COOKIE, buildRefreshCookie(token.refreshToken()).toString());
@@ -52,7 +52,7 @@ public class AuthController {
             HttpServletResponse response) {
 
         AuthTokenCommand token = callbackUseCase.callback(new CallbackCommand(request.code()));
-        TokenResponse tokenDto = authMapperMapstruct.toDto(token);
+        TokenResponse tokenDto = authTokenMapper.toDto(token);
 
         response.addHeader(HttpHeaders.SET_COOKIE, buildRefreshCookie(token.refreshToken()).toString());
 
@@ -63,7 +63,7 @@ public class AuthController {
     @PostMapping("/refresh")
     public ResponseEntity<ResponseDto<TokenResponse>> refresh(@CookieValue(required = false) String refreshToken, HttpServletResponse response) {
         AuthTokenCommand token = refreshTokenUseCase.refresh(refreshToken);
-        TokenResponse tokenDto = authMapperMapstruct.toDto(token);
+        TokenResponse tokenDto = authTokenMapper.toDto(token);
 
         response.addHeader(HttpHeaders.SET_COOKIE, buildRefreshCookie(token.refreshToken()).toString());
 
