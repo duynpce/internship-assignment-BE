@@ -13,5 +13,5 @@ import org.springframework.validation.annotation.Validated;
 public class AppProperties {
 
     @NotBlank(message = "client uri cannot be blank")
-    private  String angularUrl;
+    private  String clientUri;
 }

@@ -1,3 +1,18 @@
+spring:
+  application:
+    name: auth-service
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/shopping_db}
+    username: ${SPRING_DATASOURCE_USERNAME:myuser}
+    password: ${SPRING_DATASOURCE_PASSWORD:secret}
+    driver-class-name: org.postgresql.Driver
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${KEYCLOAK_SERVER_URL:http://keycloak:8080}/realms/${KEYCLOAK_REALM:shopping}/protocol/openid-connect/certs
+
 keycloak:
   server-url: ${KEYCLOAK_SERVER_URL:http://keycloak:8080}
   realm: ${KEYCLOAK_REALM:shopping}
@@ -5,6 +20,7 @@ keycloak:
   client-secret: ${KEYCLOAK_CLIENT_SECRET}
   admin-username: ${KEYCLOAK_ADMIN_USERNAME:admin}
   admin-password: ${KEYCLOAK_ADMIN_PASSWORD:admin}
+  redirect-uri: ${CLIENT_URI}/auth/callback
 
 jwt:
   access-secret: ${JWT_ACCESS_SECRET}
@@ -13,7 +29,7 @@ jwt:
   refresh-expiration-day: ${JWT_REFRESH_EXPIRATION_DAY:1}
 
 app:
-  angular-url: ${ANGULAR_URL:http://localhost:4200}
+  client_URI: ${CLIENT_URI:http://localhost:4200}
   user-service-url: ${USER_SERVICE_URL:http://user-service:8081}
 
 server:
