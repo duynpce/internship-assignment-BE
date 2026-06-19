@@ -8,11 +8,13 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @Getter
 @Setter
 public class KeycloakProperties {
-    private String serverUrl;
+    private String serverRemoteUrl;
+    private String serverLocalUrl;
     private String realm;
     private String clientId;
     private String clientSecret;
     private String adminUsername;
     private String adminPassword;
-    private String redirectUri;
+    private String remoteRedirectUri;
+    private String localRedirectUri;
 }

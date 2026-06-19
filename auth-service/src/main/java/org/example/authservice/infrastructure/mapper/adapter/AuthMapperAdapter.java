@@ -1,11 +1,9 @@
 package org.example.authservice.infrastructure.mapper.adapter;
 
 import org.example.authservice.application.command.AuthTokenCommand;
-import org.example.authservice.application.command.LoginCommand;
 import org.example.authservice.application.mapper.AuthTokenMapper;
 import org.example.authservice.domain.model.AuthToken;
 import org.example.authservice.infrastructure.mapper.mapstruct.AuthMapperMapstruct;
-import org.example.authservice.infrastructure.web.dto.LoginRequest;
 import org.example.authservice.infrastructure.web.dto.TokenResponse;
 import org.example.authservice.infrastructure.web.entity.AuthTokenEntity;
 import org.springframework.stereotype.Component;

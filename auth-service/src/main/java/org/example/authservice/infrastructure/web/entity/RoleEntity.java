@@ -2,23 +2,11 @@ package org.example.authservice.infrastructure.web.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
-import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-/**
- * RBAC – Role (nhóm quyền).
- *
- * Một Role tập hợp nhiều Permission. Account được gán Role,
- * và thừa hưởng toàn bộ Permission của Role đó.
- *
- * Bảng: roles
- * Join:  role_permissions  (roles ↔ permissions)
- */
 @Entity
 @Table(
     name = "roles",

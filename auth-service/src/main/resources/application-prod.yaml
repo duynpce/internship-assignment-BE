@@ -1,26 +1,44 @@
 spring:
   application:
     name: auth-service
+
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/shopping_db}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/auth_db}
     username: ${SPRING_DATASOURCE_USERNAME:myuser}
     password: ${SPRING_DATASOURCE_PASSWORD:secret}
     driver-class-name: org.postgresql.Driver
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
 
   security:
     oauth2:
       resourceserver:
         jwt:
-          jwk-set-uri: ${KEYCLOAK_SERVER_URL:http://keycloak:8080}/realms/${KEYCLOAK_REALM:shopping}/protocol/openid-connect/certs
+          jwk-set-uri: ${KEYCLOAK_SERVER_REMOTE_URL:http://keycloak:8080}/realms/${KEYCLOAK_REALM:user}/protocol/openid-connect/certs
 
 keycloak:
-  server-url: ${KEYCLOAK_SERVER_URL:http://keycloak:8080}
-  realm: ${KEYCLOAK_REALM:shopping}
+  server-remote-url: ${KEYCLOAK_SERVER_REMOTE_URL:http://keycloak:8080}
+  server-local-url: ${KEYCLOAK_SERVER_LOCAL_URL:http://keycloak:9090}
+  realm: ${KEYCLOAK_REALM:user}
   client-id: ${KEYCLOAK_CLIENT_ID:shopping-client}
   client-secret: ${KEYCLOAK_CLIENT_SECRET}
   admin-username: ${KEYCLOAK_ADMIN_USERNAME:admin}
   admin-password: ${KEYCLOAK_ADMIN_PASSWORD:admin}
-  redirect-uri: ${CLIENT_URI}/auth/callback
+  remote-redirect-uri: ${CLIENT_URI:http://localhost:4200}/callback/remote
+  local-redirect-uri: ${CLIENT_URI:http://localhost:4200}/callback/local
 
 jwt:
   access-secret: ${JWT_ACCESS_SECRET}
@@ -29,7 +47,7 @@ jwt:
   refresh-expiration-day: ${JWT_REFRESH_EXPIRATION_DAY:1}
 
 app:
-  client_URI: ${CLIENT_URI:http://localhost:4200}
+  clientUri: ${CLIENT_URI:http://localhost:4200}
   user-service-url: ${USER_SERVICE_URL:http://user-service:8081}
 
 server:

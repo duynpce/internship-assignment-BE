@@ -1,8 +1,9 @@
 package org.example.authservice.domain.model;
 
+import org.example.authservice.domain.constant.AccountStatus;
 import org.example.authservice.domain.valueobject.Email;
-import org.example.authservice.domain.valueobject.PhoneNumber;
 
+import java.time.Instant;
 import java.util.Set;
 
 public class AccountCredential {
@@ -10,7 +11,9 @@ public class AccountCredential {
     private String password;
     private Set<Role> roles;
     private Email email;
-    private PhoneNumber phoneNumber;
+    private AccountStatus status;
+    private Instant createdAt =  Instant.now();
+    private Instant updatedAt;
 
     public String getUsername() {
         return username;
@@ -36,24 +39,32 @@ public class AccountCredential {
         this.roles = roles;
     }
 
-    public PhoneNumber getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public void setPhoneNumber(PhoneNumber phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-
-    public PhoneNumber changePhoneNumber(String phoneNumber){
-        return new PhoneNumber(phoneNumber);
-    }
-
     public Email getEmail() {
         return email;
     }
 
     public void setEmail(Email email) {
         this.email = email;
+    }
+
+    public AccountStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(AccountStatus status) {
+        this.status = status;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Instant updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
     public Email changeEmail(String email){

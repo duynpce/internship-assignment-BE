@@ -2,7 +2,8 @@ package org.example.authservice.application.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.authservice.application.client.KeycloakClient;
+import org.example.authservice.application.client.KeycloakLocalClient;
+import org.example.authservice.application.client.KeycloakRemoteClient;
 import org.example.authservice.application.client.TokenGeneratorClient;
 import org.example.authservice.application.command.AuthTokenCommand;
 import org.example.authservice.application.command.KeycloakTokenCommand;
@@ -23,30 +24,51 @@ import java.util.UUID;
 @Slf4j
 public class RefreshService implements RefreshTokenUseCase {
 
-    private final KeycloakClient keycloakClient;
+    private final KeycloakRemoteClient keycloakRemoteClient;
+    private final KeycloakLocalClient keycloakLocalClient;
     private final TokenGeneratorClient tokenGeneratorClient;
     private final AuthTokenRepository authTokenRepository;
     private final JwtProperties jwtProperties;
 
     @Override
     @Transactional
-    public AuthTokenCommand refresh(String authRefreshToken) {
-        log.info("Refresh Token: {}", authRefreshToken);
+    public AuthTokenCommand remoteRefresh(String authRefreshToken) {
+        log.info("Remote Refresh Token: {}", authRefreshToken);
+        AuthToken stored = validateAndLoad(authRefreshToken);
+        String username = tokenGeneratorClient.extractUsernameFromRefreshToken(authRefreshToken);
+        UUID userId     = tokenGeneratorClient.extractUserIdFromRefreshToken(authRefreshToken);
+
+        KeycloakTokenCommand keycloakSession = keycloakRemoteClient.refresh(stored.getKeycloakRefreshToken(), username);
+        return saveNewToken(userId, username, keycloakSession);
+    }
+
+    @Override
+    @Transactional
+    public AuthTokenCommand localRefresh(String authRefreshToken) {
+        log.info("Local Refresh Token: {}", authRefreshToken);
+        AuthToken stored = validateAndLoad(authRefreshToken);
+        String username = tokenGeneratorClient.extractUsernameFromRefreshToken(authRefreshToken);
+        UUID userId     = tokenGeneratorClient.extractUserIdFromRefreshToken(authRefreshToken);
+
+        KeycloakTokenCommand keycloakSession = keycloakLocalClient.refresh(stored.getKeycloakRefreshToken(), username);
+        return saveNewToken(userId, username, keycloakSession);
+    }
+
+    private AuthToken validateAndLoad(String authRefreshToken) {
         if (authRefreshToken == null || authRefreshToken.isBlank()) {
             throw new UnauthorizedException("Refresh token must not be empty");
         }
-
         tokenGeneratorClient.validateRefreshToken(authRefreshToken);
         UUID userId = tokenGeneratorClient.extractUserIdFromRefreshToken(authRefreshToken);
-        String username = tokenGeneratorClient.extractUsernameFromRefreshToken(authRefreshToken);
 
         AuthToken stored = authTokenRepository.findByUserId(userId);
         if (stored == null || !stored.getAuthRefreshToken().equals(authRefreshToken)) {
             throw new UnauthorizedException("Refresh token has been revoked");
         }
+        return stored;
+    }
 
-        KeycloakTokenCommand keycloakSession = keycloakClient.refresh(stored.getKeycloakRefreshToken(), username);
-
+    private AuthTokenCommand saveNewToken(UUID userId, String username, KeycloakTokenCommand keycloakSession) {
         AuthTokenCommand newAuthToken = tokenGeneratorClient.generate(username, userId);
 
         AuthToken updatedRecord = new AuthToken(

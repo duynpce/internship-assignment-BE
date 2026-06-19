@@ -1,7 +1,8 @@
 package org.example.authservice.infrastructure.config;
 
 import org.example.authservice.domain.exception.ExternalServiceException;
-import org.example.authservice.infrastructure.keycloak.client.KeycloakHttpClient;
+import org.example.authservice.infrastructure.keycloak.client.KeycloakLocalHttpClient;
+import org.example.authservice.infrastructure.keycloak.client.KeycloakRemoteHttpClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -15,9 +16,22 @@ import reactor.core.publisher.Mono;
 public class HttpClientConfig {
 
     @Bean
-    public KeycloakHttpClient keycloakHttpClient(KeycloakProperties props) {
-        WebClient webClient = WebClient.builder()
-                .baseUrl(props.getServerUrl())
+    public KeycloakRemoteHttpClient keycloakRemoteHttpClient(KeycloakProperties props) {
+        WebClient webClient = buildWebClient(props.getServerRemoteUrl());
+        return HttpServiceProxyFactory.builderFor(WebClientAdapter.create(webClient)).build()
+                .createClient(KeycloakRemoteHttpClient.class);
+    }
+
+    @Bean
+    public KeycloakLocalHttpClient keycloakLocalHttpClient(KeycloakProperties props) {
+        WebClient webClient = buildWebClient(props.getServerLocalUrl());
+        return HttpServiceProxyFactory.builderFor(WebClientAdapter.create(webClient)).build()
+                .createClient(KeycloakLocalHttpClient.class);
+    }
+
+    private WebClient buildWebClient(String baseUrl) {
+        return WebClient.builder()
+                .baseUrl(baseUrl)
                 .defaultStatusHandler(
                         HttpStatusCode::isError,
                         clientResponse -> clientResponse.bodyToMono(String.class)
@@ -30,10 +44,5 @@ public class HttpClientConfig {
                                 ))
                 )
                 .build();
-
-        WebClientAdapter adapter = WebClientAdapter.create(webClient);
-        HttpServiceProxyFactory factory = HttpServiceProxyFactory.builderFor(adapter).build();
-
-        return factory.createClient(KeycloakHttpClient.class);
     }
 }

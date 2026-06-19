@@ -2,6 +2,7 @@ package org.example.authservice.infrastructure.web.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.example.authservice.domain.constant.AccountStatus;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -39,9 +40,10 @@ public class AccountCredentialEntity {
     @Column(name = "password", nullable = false)
     private String password;
 
-    @Column(name = "enabled", nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
     @Builder.Default
-    private boolean enabled = true;
+    private AccountStatus status = AccountStatus.ACTIVE;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(

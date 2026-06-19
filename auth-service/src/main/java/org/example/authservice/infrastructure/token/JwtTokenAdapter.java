@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 @Component
-public class JwtTokenAdapter implements TokenGeneratorClient {
+public class    JwtTokenAdapter implements TokenGeneratorClient {
 
     private static final String CLAIM_USER_ID = "userId";
     private final JwtProperties jwtProperties;

@@ -2,7 +2,8 @@ package org.example.authservice.application.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.authservice.application.client.KeycloakClient;
+import org.example.authservice.application.client.KeycloakLocalClient;
+import org.example.authservice.application.client.KeycloakRemoteClient;
 import org.example.authservice.application.client.TokenGeneratorClient;
 import org.example.authservice.application.command.AuthTokenCommand;
 import org.example.authservice.application.command.CallbackCommand;
@@ -22,18 +23,31 @@ import java.time.temporal.ChronoUnit;
 @Slf4j
 public class CallbackService implements CallbackUseCase {
 
-    private final KeycloakClient keycloakClient;
+    private final KeycloakRemoteClient keycloakRemoteClient;
+    private final KeycloakLocalClient keycloakLocalClient;
     private final TokenGeneratorClient tokenGeneratorClient;
     private final AuthTokenRepository authTokenRepository;
     private final JwtProperties jwtProperties;
 
     @Override
     @Transactional
-    public AuthTokenCommand callback(CallbackCommand command) {
-        log.info("OAuth2 callback received, exchanging authorization code for tokens");
+    public AuthTokenCommand remoteCallback(CallbackCommand command) {
+        log.info("Remote OAuth2 callback received, exchanging authorization code for tokens");
 
-        KeycloakTokenCommand keycloakSession = keycloakClient.exchangeCode(command.code());
+        KeycloakTokenCommand keycloakSession = keycloakRemoteClient.exchangeCode(command.code());
+        return buildAndSaveToken(keycloakSession);
+    }
 
+    @Override
+    @Transactional
+    public AuthTokenCommand localCallback(CallbackCommand command) {
+        log.info("Local OAuth2 callback received, exchanging authorization code for tokens");
+
+        KeycloakTokenCommand keycloakSession = keycloakLocalClient.exchangeCode(command.code());
+        return buildAndSaveToken(keycloakSession);
+    }
+
+    private AuthTokenCommand buildAndSaveToken(KeycloakTokenCommand keycloakSession) {
         AuthTokenCommand authToken = tokenGeneratorClient.generate(
                 keycloakSession.username(),
                 keycloakSession.userId()
@@ -48,7 +62,7 @@ public class CallbackService implements CallbackUseCase {
 
         authTokenRepository.save(authTokenRecord);
 
-        log.info("OAuth2 callback successful for userId: {}", keycloakSession.userId());
+        log.info("Callback successful for userId: {}", keycloakSession.userId());
         return authToken;
     }
 }
