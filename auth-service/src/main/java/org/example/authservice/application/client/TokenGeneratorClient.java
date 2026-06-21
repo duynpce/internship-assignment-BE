@@ -16,7 +16,9 @@ public interface TokenGeneratorClient {
     String extractUsernameFromRefreshToken(String refreshToken);
     UUID extractUserIdFromAccessToken(String accessToken);
     UUID extractUserIdFromRefreshToken(String refreshToken);
-    UUID extractUserIdFromKeycloakAccessToken(String accessToken);
-    String extractUsernameFromKeycloakAccessToken(String keycloakAccessToken);
+    UUID extractUserIdFromLocalKeycloakAccessToken(String keycloakAccessToken);
+    UUID extractUserIdFromRemoteKeycloakAccessToken(String keycloakAccessToken);
+    String extractUsernameFromLocalKeycloakAccessToken(String keycloakAccessToken);
+    String extractUsernameFromRemoteKeycloakAccessToken(String keycloakAccessToken);
 
 }

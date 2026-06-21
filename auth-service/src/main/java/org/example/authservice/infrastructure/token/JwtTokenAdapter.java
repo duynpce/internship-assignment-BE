@@ -22,12 +22,15 @@ public class    JwtTokenAdapter implements TokenGeneratorClient {
 
     private static final String CLAIM_USER_ID = "userId";
     private final JwtProperties jwtProperties;
-    private final JwtDecoder keycloakDecoder;
+    private final JwtDecoder keycloakLocalDecoder;
+    private final JwtDecoder keycloakRemoteDecoder;
 
     public JwtTokenAdapter(JwtProperties jwtProperties,
-                           @Qualifier("keycloakJwtDecoder") JwtDecoder keycloakDecoder) {
+                           @Qualifier("keycloakLocalJwtDecoder") JwtDecoder keycloakLocalDecoder,
+                           @Qualifier("keycloakRemoteJwtDecoder") JwtDecoder keycloakRemoteDecoder) {
         this.jwtProperties = jwtProperties;
-        this.keycloakDecoder = keycloakDecoder;
+        this.keycloakLocalDecoder = keycloakLocalDecoder;
+        this.keycloakRemoteDecoder = keycloakRemoteDecoder;
     }
 
 
@@ -92,13 +95,27 @@ public class    JwtTokenAdapter implements TokenGeneratorClient {
     }
 
     @Override
-    public UUID extractUserIdFromKeycloakAccessToken(String keycloakAccessToken) {
-        return UUID.fromString(keycloakDecoder.decode(keycloakAccessToken).getClaimAsString("sub"));
+    //user federation --> have prefix
+    public UUID extractUserIdFromLocalKeycloakAccessToken(String keycloakAccessToken) {
+        String sub = keycloakLocalDecoder.decode(keycloakAccessToken).getClaimAsString("sub");
+        String userId = sub.contains(":") ? sub.substring(sub.lastIndexOf(":") + 1) : sub;
+        return UUID.fromString(userId);
+    }
+
+    // user provider database --> no prefix
+    @Override
+    public UUID extractUserIdFromRemoteKeycloakAccessToken(String keycloakAccessToken) {
+        return UUID.fromString(keycloakRemoteDecoder.decode(keycloakAccessToken).getClaimAsString("sub"));
     }
 
     @Override
-    public String extractUsernameFromKeycloakAccessToken(String keycloakAccessToken) {
-        return keycloakDecoder.decode(keycloakAccessToken).getClaimAsString("preferred_username");
+    public String extractUsernameFromLocalKeycloakAccessToken(String keycloakAccessToken) {
+        return keycloakLocalDecoder.decode(keycloakAccessToken).getClaimAsString("preferred_username");
+    }
+
+    @Override
+    public String extractUsernameFromRemoteKeycloakAccessToken(String keycloakAccessToken) {
+        return keycloakRemoteDecoder.decode(keycloakAccessToken).getClaimAsString("preferred_username");
     }
 
 

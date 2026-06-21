@@ -1,7 +1,7 @@
 package org.example.authservice.infrastructure.web.data.adapter;
 
 import lombok.RequiredArgsConstructor;
-import org.example.authservice.application.mapper.AuthTokenMapper;
+import org.example.authservice.application.mapper.AuthMapper;
 import org.example.authservice.application.repository.AuthTokenRepository;
 import org.example.authservice.domain.exception.UnauthorizedException;
 import org.example.authservice.domain.model.AuthToken;
@@ -19,7 +19,7 @@ import java.util.UUID;
 public class AuthTokenRepositoryAdapter implements AuthTokenRepository {
 
     private final SpringDataAuthTokenRepository springDataRepo;
-    private final AuthTokenMapper mapper;
+    private final AuthMapper mapper;
     private final JwtProperties jwtProperties;
 
     @Override
