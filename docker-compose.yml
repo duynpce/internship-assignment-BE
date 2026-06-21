@@ -6,25 +6,41 @@ services:
     environment:
       - 'POSTGRES_USER=myuser'
       - 'POSTGRES_PASSWORD=secret'
-      - 'POSTGRES_DB=shopping_db'
+    volumes:
+      - './resource/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql'
     ports:
-      - '5432:5432'
-    labels:
-      org.springframework.boot.jdbc.parameters: 'ssl=true&sslmode=require'
+      - '5433:5432'  # ✅ đổi tránh conflict với local PostgreSQL
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U myuser" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
-  keycloak:
+  keycloak-remote:
     image: 'keycloak/keycloak:26.6.2'
-    container_name: keycloak
+    container_name: keycloak-remote
     environment:
-      KC_HOSTNAME: localhost
-      KC_HOSTNAME_PORT: 8080
-      KC_HOSTNAME_STRICT_BACKCHANNEL: "true"
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HOSTNAME: "http://localhost:8080"   # ✅ dùng hostname:v2
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
       KC_HEALTH_ENABLED: "true"
       KC_LOG_LEVEL: info
     ports:
       - '8080:8080'
+    command: start-dev
+
+  keycloak-local:
+    image: 'keycloak/keycloak:26.6.2'
+    container_name: keycloak-local
+    environment:
+      KC_HOSTNAME: "http://localhost:9090"   # ✅ dùng hostname:v2
+      KC_HTTP_PORT: 9090
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_HEALTH_ENABLED: "true"
+      KC_LOG_LEVEL: info
+    ports:
+      - '9090:9090'
     command: start-dev
     volumes:
       - './custom-keycloak/target-public/custom-keycloak.jar:/opt/keycloak/providers/my-custom-plugin.jar'
@@ -34,9 +50,10 @@ services:
     build: ./auth-service
     container_name: auth-service
     environment:
-      - SPRING_PROFILES_ACTIVE=default
-      - KEYCLOAK_SERVER_URL=http://keycloak:8080
-      - KEYCLOAK_REALM=shopping
+      - SPRING_PROFILES_ACTIVE=prod
+      - KEYCLOAK_SERVER_REMOTE_URL=http://keycloak-remote:8080  # ✅ đúng tên service
+      - KEYCLOAK_SERVER_LOCAL_URL=http://keycloak-local:9090    # ✅ đúng tên service
+      - KEYCLOAK_REALM=user
       - KEYCLOAK_CLIENT_ID=shopping-client
       - KEYCLOAK_CLIENT_SECRET=change-me
       - KEYCLOAK_ADMIN_USERNAME=admin
@@ -44,13 +61,21 @@ services:
       - JWT_ACCESS_SECRET=bXktYWNjZXNzLXNlY3JldC1rZXktZm9yLXNob3BwaW5nLWFwcC0yNTY=
       - JWT_REFRESH_SECRET=bXktcmVmcmVzaC1zZWNyZXQta2V5LWZvci1zaG9wcGluZy1hcHAtMjU2
       - JWT_ACCESS_EXPIRATION_MINUTES=15
-      - JWT_REFRESH_EXPIRATION_DAY=7
-      - ANGULAR_URL=http://localhost:4200
+      - JWT_REFRESH_EXPIRATION_DAY=1
+      - CLIENT_URI=http://localhost:4200
       - USER_SERVICE_URL=http://user-service:8081
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/auth_db
+      - SPRING_DATASOURCE_USERNAME=myuser
+      - SPRING_DATASOURCE_PASSWORD=secret
     ports:
       - "8084:8084"
     depends_on:
-      - keycloak
+      postgres:
+        condition: service_healthy  # ✅ đợi postgres healthy mới start
+      keycloak-remote:
+        condition: service_started
+      keycloak-local:
+        condition: service_started
     develop:
       watch:
         - action: rebuild
@@ -60,13 +85,14 @@ services:
     build: ./user-service
     container_name: user-service
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/shopping_db
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/user_db
       - SPRING_DATASOURCE_USERNAME=myuser
       - SPRING_DATASOURCE_PASSWORD=secret
     ports:
       - "8081:8081"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy  # ✅
 
   report-service:
     build: ./report-service
@@ -78,11 +104,12 @@ services:
     ports:
       - "8082:8082"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy  # ✅
     develop:
       watch:
         - action: rebuild
-          path: ./user-service/src
+          path: ./report-service/src
 
   ticket-service:
     build: ./ticket-service
@@ -94,7 +121,8 @@ services:
     ports:
       - "8083:8083"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy  # ✅
     develop:
       watch:
         - action: rebuild
