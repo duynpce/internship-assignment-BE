@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.authservice.application.command.AuthTokenCommand;
 import org.example.authservice.application.command.CallbackCommand;
-import org.example.authservice.application.mapper.AuthTokenMapper;
+import org.example.authservice.application.mapper.AuthMapper;
 import org.example.authservice.application.usecase.CallbackUseCase;
 import org.example.authservice.application.usecase.LogoutUseCase;
 import org.example.authservice.application.usecase.RefreshTokenUseCase;
@@ -27,7 +27,7 @@ import java.time.Duration;
 public class RemoteAuthController {
 
     private final RefreshTokenUseCase refreshTokenUseCase;
-    private final AuthTokenMapper authTokenMapper;
+    private final AuthMapper authMapper;
     private final LogoutUseCase logoutUseCase;
     private final CallbackUseCase callbackUseCase;
 
@@ -37,7 +37,7 @@ public class RemoteAuthController {
             HttpServletResponse response) {
 
         AuthTokenCommand token = callbackUseCase.remoteCallback(new CallbackCommand(request.code()));
-        TokenResponse tokenDto = authTokenMapper.toDto(token);
+        TokenResponse tokenDto = authMapper.toDto(token);
         response.addHeader(HttpHeaders.SET_COOKIE, buildRefreshCookie(token.refreshToken()).toString());
         return ResponseEntity.ok(ResponseDto.success(tokenDto));
     }
@@ -48,7 +48,7 @@ public class RemoteAuthController {
             HttpServletResponse response) {
 
         AuthTokenCommand token = refreshTokenUseCase.remoteRefresh(refreshToken);
-        TokenResponse tokenDto = authTokenMapper.toDto(token);
+        TokenResponse tokenDto = authMapper.toDto(token);
         response.addHeader(HttpHeaders.SET_COOKIE, buildRefreshCookie(token.refreshToken()).toString());
         return ResponseEntity.ok(ResponseDto.success(tokenDto));
     }

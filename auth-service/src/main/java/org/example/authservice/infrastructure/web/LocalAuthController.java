@@ -1,15 +1,18 @@
 package org.example.authservice.infrastructure.web;
 
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.authservice.application.command.AuthTokenCommand;
 import org.example.authservice.application.command.CallbackCommand;
-import org.example.authservice.application.mapper.AuthTokenMapper;
+import org.example.authservice.application.mapper.AuthMapper;
 import org.example.authservice.application.usecase.CallbackUseCase;
 import org.example.authservice.application.usecase.LogoutUseCase;
 import org.example.authservice.application.usecase.RefreshTokenUseCase;
+import org.example.authservice.application.usecase.RegisterUseCase;
 import org.example.authservice.infrastructure.web.dto.CallbackRequest;
+import org.example.authservice.infrastructure.web.dto.RegisterRequest;
 import org.example.authservice.infrastructure.web.dto.ResponseDto;
 import org.example.authservice.infrastructure.web.dto.TokenResponse;
 import org.springframework.boot.web.server.Cookie;
@@ -27,9 +30,17 @@ import java.time.Duration;
 public class LocalAuthController {
 
     private final RefreshTokenUseCase refreshTokenUseCase;
-    private final AuthTokenMapper authTokenMapper;
+    private final AuthMapper authMapper;
     private final LogoutUseCase logoutUseCase;
     private final CallbackUseCase callbackUseCase;
+    private final RegisterUseCase registerUseCase;
+
+    @PostMapping("/register")
+    public ResponseEntity<ResponseDto<String>> register(@Valid @RequestBody RegisterRequest registerRequest) {
+        registerUseCase.register(authMapper.toCommand(registerRequest));
+
+        return ResponseEntity.ok(ResponseDto.success(null, "registered successfully"));
+    }
 
     @PostMapping("/callback")
     public ResponseEntity<ResponseDto<TokenResponse>> callback(
@@ -37,7 +48,7 @@ public class LocalAuthController {
             HttpServletResponse response) {
 
         AuthTokenCommand token = callbackUseCase.localCallback(new CallbackCommand(request.code()));
-        TokenResponse tokenDto = authTokenMapper.toDto(token);
+        TokenResponse tokenDto = authMapper.toDto(token);
         response.addHeader(HttpHeaders.SET_COOKIE, buildRefreshCookie(token.refreshToken()).toString());
         return ResponseEntity.ok(ResponseDto.success(tokenDto));
     }
@@ -48,7 +59,7 @@ public class LocalAuthController {
             HttpServletResponse response) {
 
         AuthTokenCommand token = refreshTokenUseCase.localRefresh(refreshToken);
-        TokenResponse tokenDto = authTokenMapper.toDto(token);
+        TokenResponse tokenDto = authMapper.toDto(token);
         response.addHeader(HttpHeaders.SET_COOKIE, buildRefreshCookie(token.refreshToken()).toString());
         return ResponseEntity.ok(ResponseDto.success(tokenDto));
     }

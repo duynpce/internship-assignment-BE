@@ -14,4 +14,7 @@ public class AppProperties {
 
     @NotBlank(message = "client uri cannot be blank")
     private  String clientUri;
+
+    @NotBlank(message = "user service url cannot be blank")
+    private String userServiceUrl;
 }

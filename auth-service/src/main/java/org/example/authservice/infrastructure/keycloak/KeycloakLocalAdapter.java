@@ -7,7 +7,7 @@ import org.example.authservice.application.client.TokenGeneratorClient;
 import org.example.authservice.application.command.KeycloakTokenCommand;
 import org.example.authservice.application.mapper.KeycloakMapper;
 import org.example.authservice.infrastructure.config.KeycloakProperties;
-import org.example.authservice.infrastructure.keycloak.client.KeycloakLocalHttpClient;
+import org.example.authservice.infrastructure.keycloak.httpclient.KeycloakLocalHttpClient;
 import org.example.authservice.infrastructure.keycloak.dto.KeycloakTokenResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
@@ -43,7 +43,7 @@ public class KeycloakLocalAdapter implements KeycloakLocalClient {
         form.add("refresh_token", keycloakRefreshToken);
 
         KeycloakTokenResponse response = keycloakLocalHttpClient.token(props.getRealm(), form);
-        UUID userId = tokenGeneratorClient.extractUserIdFromKeycloakAccessToken(response.getAccessToken());
+        UUID userId = tokenGeneratorClient.extractUserIdFromLocalKeycloakAccessToken(response.getAccessToken());
         return keycloakMapper.toKeycloakSession(response, username, userId);
     }
 
@@ -60,8 +60,8 @@ public class KeycloakLocalAdapter implements KeycloakLocalClient {
         log.info("Exchanging authorization code with local Keycloak, realm: {}", props.getRealm());
 
         KeycloakTokenResponse response = keycloakLocalHttpClient.token(props.getRealm(), form);
-        UUID userId     = tokenGeneratorClient.extractUserIdFromKeycloakAccessToken(response.getAccessToken());
-        String username = tokenGeneratorClient.extractUsernameFromKeycloakAccessToken(response.getAccessToken());
+        UUID userId     = tokenGeneratorClient.extractUserIdFromLocalKeycloakAccessToken(response.getAccessToken());
+        String username = tokenGeneratorClient.extractUsernameFromLocalKeycloakAccessToken(response.getAccessToken());
         return keycloakMapper.toKeycloakSession(response, username, userId);
     }
 }

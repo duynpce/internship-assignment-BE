@@ -1,4 +1,4 @@
-package org.example.authservice.infrastructure.keycloak.client;
+package org.example.authservice.infrastructure.keycloak.httpclient;
 
 import org.example.authservice.infrastructure.keycloak.dto.KeycloakTokenResponse;
 import org.springframework.util.MultiValueMap;

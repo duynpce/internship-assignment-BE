@@ -6,7 +6,7 @@ import org.example.authservice.application.client.KeycloakRemoteClient;
 import org.example.authservice.application.client.TokenGeneratorClient;
 import org.example.authservice.application.command.KeycloakTokenCommand;
 import org.example.authservice.infrastructure.config.KeycloakProperties;
-import org.example.authservice.infrastructure.keycloak.client.KeycloakRemoteHttpClient;
+import org.example.authservice.infrastructure.keycloak.httpclient.KeycloakRemoteHttpClient;
 import org.example.authservice.infrastructure.keycloak.dto.KeycloakTokenResponse;
 import org.example.authservice.application.mapper.KeycloakMapper;
 import org.springframework.stereotype.Component;
@@ -45,7 +45,7 @@ public class KeycloakRemoteAdapter implements KeycloakRemoteClient {
         form.add("refresh_token", keycloakRefreshToken);
 
         KeycloakTokenResponse response = keycloakRemoteHttpClient.token(props.getRealm(), form);
-        UUID userId = tokenGeneratorClient.extractUserIdFromKeycloakAccessToken(response.getAccessToken());
+        UUID userId = tokenGeneratorClient.extractUserIdFromRemoteKeycloakAccessToken(response.getAccessToken());
 
         return keycloakMapper.toKeycloakSession(response, username, userId);
     }
@@ -64,8 +64,8 @@ public class KeycloakRemoteAdapter implements KeycloakRemoteClient {
 
         KeycloakTokenResponse response = keycloakRemoteHttpClient.token(props.getRealm(), form);
 
-        UUID userId   = tokenGeneratorClient.extractUserIdFromKeycloakAccessToken(response.getAccessToken());
-        String username = tokenGeneratorClient.extractUsernameFromKeycloakAccessToken(response.getAccessToken());
+        UUID userId   = tokenGeneratorClient.extractUserIdFromRemoteKeycloakAccessToken(response.getAccessToken());
+        String username = tokenGeneratorClient.extractUsernameFromRemoteKeycloakAccessToken(response.getAccessToken());
 
         return keycloakMapper.toKeycloakSession(response, username, userId);
     }

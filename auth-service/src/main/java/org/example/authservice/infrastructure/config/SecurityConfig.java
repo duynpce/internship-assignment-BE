@@ -14,6 +14,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
@@ -32,10 +34,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    @Value("${spring.security.oauth2.resourceserver.jwt.jwk-set-uri}")
-    private String jwkSetUri;
     private final AppProperties appProperties;
     private final JwtProperties jwtProperties;
+    private final KeycloakProperties keycloakProperties;
 
 
     @Bean
@@ -95,7 +96,17 @@ public class SecurityConfig {
 
 
     @Bean
-    public JwtDecoder keycloakJwtDecoder() {
-        return NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
+    public JwtDecoder keycloakLocalJwtDecoder() {
+        return NimbusJwtDecoder.withJwkSetUri(keycloakProperties.getServerLocalUrl() + "/realms/" + keycloakProperties.getRealm() + "/protocol/openid-connect/certs").build();
+    }
+
+    @Bean
+    public JwtDecoder keycloakRemoteJwtDecoder() {
+        return NimbusJwtDecoder.withJwkSetUri(keycloakProperties.getServerRemoteUrl() + "/realms/" + keycloakProperties.getRealm() + "/protocol/openid-connect/certs").build();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 }
