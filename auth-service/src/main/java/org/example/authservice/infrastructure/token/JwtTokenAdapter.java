@@ -12,7 +12,12 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -21,6 +26,8 @@ import java.util.function.Function;
 public class    JwtTokenAdapter implements TokenGeneratorClient {
 
     private static final String CLAIM_USER_ID = "userId";
+    private static final String CLAIM_ROLES = "roles";
+    private static final String CLAIM_PERMISSIONS = "permissions";
     private final JwtProperties jwtProperties;
     private final JwtDecoder keycloakLocalDecoder;
     private final JwtDecoder keycloakRemoteDecoder;
@@ -37,9 +44,9 @@ public class    JwtTokenAdapter implements TokenGeneratorClient {
     // ── Interface methods ────────────────────────────────────────────────────
 
     @Override
-    public AuthTokenCommand generate(String username, UUID userId) {
-        String accessToken  = generateAccessToken(username, userId);
-        String refreshToken = generateRefreshToken(username, userId);
+    public AuthTokenCommand generate(String username, UUID userId, Set<String> permissions) {
+        String accessToken  = generateAccessToken(username, userId, permissions);
+        String refreshToken = generateRefreshToken(username, userId, permissions);
         return new AuthTokenCommand(accessToken, refreshToken, "Bearer", getExpiresInSeconds());
     }
 
@@ -118,24 +125,35 @@ public class    JwtTokenAdapter implements TokenGeneratorClient {
         return keycloakRemoteDecoder.decode(keycloakAccessToken).getClaimAsString("preferred_username");
     }
 
+    @Override
+    public Set<String> extractRolesFromRefreshToken(String refreshToken) {
+        return extractStringSetClaim(refreshToken, CLAIM_ROLES, getRefreshKey());
+    }
+
+    @Override
+    public Set<String> extractPermissionsFromRefreshToken(String refreshToken) {
+        return extractStringSetClaim(refreshToken, CLAIM_PERMISSIONS, getRefreshKey());
+    }
+
 
     // ── Private: generate ────────────────────────────────────────────────────
 
-    private String generateAccessToken(String username, UUID userId) {
+    private String generateAccessToken(String username, UUID userId, Set<String> permissions) {
         long expirationMs = TimeUnit.MINUTES.toMillis(jwtProperties.getAccessExpirationMinutes());
-        return buildToken(username, userId, getAccessKey(), expirationMs);
+        return buildToken(username, userId, permissions, getAccessKey(), expirationMs);
     }
 
-    private String generateRefreshToken(String username, UUID userId) {
+    private String generateRefreshToken(String username, UUID userId, Set<String> permissions) {
         long expirationMs = TimeUnit.DAYS.toMillis(jwtProperties.getRefreshExpirationDay());
-        return buildToken(username, userId, getRefreshKey(), expirationMs);
+        return buildToken(username, userId, permissions, getRefreshKey(), expirationMs);
     }
 
-    private String buildToken(String username, UUID userId, SecretKey key, long expirationMs) {
+    private String buildToken(String username, UUID userId, Set<String> permissions, SecretKey key, long expirationMs) {
         long now = System.currentTimeMillis();
         return Jwts.builder()
                 .subject(username)
                 .claim(CLAIM_USER_ID, userId.toString())
+                .claim(CLAIM_PERMISSIONS, normalizeClaims(permissions))
                 .issuedAt(new Date(now))
                 .expiration(new Date(now + expirationMs))
                 .signWith(key)
@@ -168,6 +186,35 @@ public class    JwtTokenAdapter implements TokenGeneratorClient {
                 .parseSignedClaims(token)
                 .getPayload();
         return claimsResolver.apply(claims);
+    }
+
+    private Set<String> extractStringSetClaim(String token, String claimName, SecretKey key) {
+        List<?> values = extractClaim(token, claims -> claims.get(claimName, List.class), key);
+        if (values == null || values.isEmpty()) {
+            return Collections.emptySet();
+        }
+
+        Set<String> result = new LinkedHashSet<>();
+        for (Object value : values) {
+            if (value instanceof String str && !str.isBlank()) {
+                result.add(str);
+            }
+        }
+        return result;
+    }
+
+    private List<String> normalizeClaims(Set<String> values) {
+        if (values == null || values.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<String> result = new ArrayList<>();
+        for (String value : values) {
+            if (value != null && !value.isBlank()) {
+                result.add(value);
+            }
+        }
+        Collections.sort(result);
+        return result;
     }
 
     // ── Private: keys ────────────────────────────────────────────────────────

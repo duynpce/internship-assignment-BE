@@ -46,6 +46,13 @@ public class AccountCredentialRepositoryAdapter implements AccountCredentialRepo
     }
 
     @Override
+    public AccountCredential findByIdWithRolesAndPermissions(UUID id) {
+        return springDataRepo.findWithRolesById(id)
+                .map(mapper::toDomain)
+                .orElseThrow(() -> new UnauthorizedException("Account credential not found for id: " + id));
+    }
+
+    @Override
     public boolean existsByUsername(String username) {
         return springDataRepo.existsByUsername(username);
     }

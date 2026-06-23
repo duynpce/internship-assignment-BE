@@ -8,15 +8,21 @@ import org.example.authservice.application.client.TokenGeneratorClient;
 import org.example.authservice.application.command.AuthTokenCommand;
 import org.example.authservice.application.command.CallbackCommand;
 import org.example.authservice.application.command.KeycloakTokenCommand;
+import org.example.authservice.application.repository.AccountCredentialRepository;
 import org.example.authservice.application.repository.AuthTokenRepository;
 import org.example.authservice.application.usecase.CallbackUseCase;
+import org.example.authservice.domain.model.AccountCredential;
 import org.example.authservice.domain.model.AuthToken;
+import org.example.authservice.domain.model.Permission;
 import org.example.authservice.infrastructure.config.JwtProperties;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +33,7 @@ public class CallbackService implements CallbackUseCase {
     private final KeycloakLocalClient keycloakLocalClient;
     private final TokenGeneratorClient tokenGeneratorClient;
     private final AuthTokenRepository authTokenRepository;
+    private final AccountCredentialRepository accountCredentialRepository;
     private final JwtProperties jwtProperties;
 
     @Override
@@ -48,13 +55,23 @@ public class CallbackService implements CallbackUseCase {
     }
 
     private AuthTokenCommand buildAndSaveToken(KeycloakTokenCommand keycloakSession) {
+        UUID userId = keycloakSession.userId();
+        AccountCredential accountCredential = accountCredentialRepository.findByIdWithRolesAndPermissions(userId);
+        Set<String> permissions = accountCredential.getRoles().stream()
+                .flatMap(role -> role.getPermissions().stream())
+                .map(Permission::toAuthority)
+                .collect(Collectors.toSet());
+
+
+
         AuthTokenCommand authToken = tokenGeneratorClient.generate(
-                keycloakSession.username(),
-                keycloakSession.userId()
+                accountCredential.getUsername(),
+                userId,
+                permissions
         );
 
         AuthToken authTokenRecord = new AuthToken(
-                keycloakSession.userId(),
+                userId,
                 authToken.refreshToken(),
                 keycloakSession.refreshToken(),
                 Instant.now().plus(jwtProperties.getRefreshExpirationDay(), ChronoUnit.DAYS)
@@ -62,7 +79,8 @@ public class CallbackService implements CallbackUseCase {
 
         authTokenRepository.save(authTokenRecord);
 
-        log.info("Callback successful for userId: {}", keycloakSession.userId());
+        log.info("Callback successful for userId: {}", userId);
         return authToken;
     }
+
 }

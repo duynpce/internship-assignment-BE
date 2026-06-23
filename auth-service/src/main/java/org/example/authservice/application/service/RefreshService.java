@@ -7,6 +7,7 @@ import org.example.authservice.application.client.KeycloakRemoteClient;
 import org.example.authservice.application.client.TokenGeneratorClient;
 import org.example.authservice.application.command.AuthTokenCommand;
 import org.example.authservice.application.command.KeycloakTokenCommand;
+import org.example.authservice.application.repository.AccountCredentialRepository;
 import org.example.authservice.application.repository.AuthTokenRepository;
 import org.example.authservice.application.usecase.RefreshTokenUseCase;
 import org.example.authservice.domain.exception.UnauthorizedException;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -39,7 +41,7 @@ public class RefreshService implements RefreshTokenUseCase {
         UUID userId     = tokenGeneratorClient.extractUserIdFromRefreshToken(authRefreshToken);
 
         KeycloakTokenCommand keycloakSession = keycloakRemoteClient.refresh(stored.getKeycloakRefreshToken(), username);
-        return saveNewToken(userId, username, keycloakSession);
+        return saveNewToken(userId, username, keycloakSession, authRefreshToken);
     }
 
     @Override
@@ -51,7 +53,7 @@ public class RefreshService implements RefreshTokenUseCase {
         UUID userId     = tokenGeneratorClient.extractUserIdFromRefreshToken(authRefreshToken);
 
         KeycloakTokenCommand keycloakSession = keycloakLocalClient.refresh(stored.getKeycloakRefreshToken(), username);
-        return saveNewToken(userId, username, keycloakSession);
+        return saveNewToken(userId, username, keycloakSession, authRefreshToken);
     }
 
     private AuthToken validateAndLoad(String authRefreshToken) {
@@ -68,8 +70,10 @@ public class RefreshService implements RefreshTokenUseCase {
         return stored;
     }
 
-    private AuthTokenCommand saveNewToken(UUID userId, String username, KeycloakTokenCommand keycloakSession) {
-        AuthTokenCommand newAuthToken = tokenGeneratorClient.generate(username, userId);
+    private AuthTokenCommand saveNewToken(UUID userId, String username, KeycloakTokenCommand keycloakSession, String authRefreshToken) {
+        Set<String> permissions = tokenGeneratorClient.extractPermissionsFromRefreshToken(authRefreshToken);
+
+        AuthTokenCommand newAuthToken = tokenGeneratorClient.generate(username, userId, permissions);
 
         AuthToken updatedRecord = new AuthToken(
                 userId,

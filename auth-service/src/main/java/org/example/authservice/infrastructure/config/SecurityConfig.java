@@ -50,7 +50,7 @@ public class SecurityConfig {
                         .authenticationEntryPoint(resourceServerAuthenticationEntryPoint())
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
-                        .jwt(Customizer.withDefaults())
+                        .jwt(jwt -> jwt.decoder(jwtDecoder()))
                         .authenticationEntryPoint(resourceServerAuthenticationEntryPoint())
                 )
                 .logout(logout -> logout
@@ -103,6 +103,12 @@ public class SecurityConfig {
     @Bean
     public JwtDecoder keycloakRemoteJwtDecoder() {
         return NimbusJwtDecoder.withJwkSetUri(keycloakProperties.getServerRemoteUrl() + "/realms/" + keycloakProperties.getRealm() + "/protocol/openid-connect/certs").build();
+    }
+
+    @Bean
+    public JwtDecoder jwtDecoder() {
+        SecretKey key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtProperties.getAccessSecret()));
+        return NimbusJwtDecoder.withSecretKey(key).build();
     }
 
     @Bean

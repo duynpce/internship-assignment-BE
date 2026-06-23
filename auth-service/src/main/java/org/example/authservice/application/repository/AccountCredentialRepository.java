@@ -9,6 +9,8 @@ public interface AccountCredentialRepository {
 
     AccountCredential findById(UUID id);
 
+    AccountCredential findByIdWithRolesAndPermissions(UUID id);
+
     boolean existsByUsername(String username);
     boolean existsByEmail(String email);
 
