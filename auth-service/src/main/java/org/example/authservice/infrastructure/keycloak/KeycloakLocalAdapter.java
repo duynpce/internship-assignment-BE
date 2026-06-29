@@ -56,8 +56,6 @@ public class KeycloakLocalAdapter implements KeycloakLocalClient {
         form.add("code",          code);
         form.add("redirect_uri",  props.getLocalRedirectUri());
 
-        log.info(props.getLocalRedirectUri());
-        log.info("Exchanging authorization code with local Keycloak, realm: {}", props.getRealm());
 
         KeycloakTokenResponse response = keycloakLocalHttpClient.token(props.getRealm(), form);
         UUID userId     = tokenGeneratorClient.extractUserIdFromLocalKeycloakAccessToken(response.getAccessToken());

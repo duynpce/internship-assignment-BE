@@ -16,6 +16,11 @@ public class KeycloakMapperAdapter implements KeycloakMapper {
 
     @Override
     public KeycloakTokenCommand toKeycloakSession(KeycloakTokenResponse response, String username, UUID userId) {
-        return keycloakMapperMapstruct.toKeycloakSession(response,username ,userId);
+        return keycloakMapperMapstruct.toKeycloakSession(response, username, userId);
+    }
+
+    @Override
+    public KeycloakTokenCommand toKeycloakSessionWithEmail(KeycloakTokenResponse response, String username, UUID userId, String email) {
+        return keycloakMapperMapstruct.toKeycloakSessionWithEmail(response, username, userId, email);
     }
 }

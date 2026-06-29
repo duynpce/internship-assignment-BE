@@ -6,6 +6,8 @@ import org.example.authservice.application.command.CreateCredentialAccountComman
 import org.example.authservice.application.command.RegisterCommand;
 import org.example.authservice.domain.model.AccountCredential;
 import org.example.authservice.domain.model.AuthToken;
+import org.example.authservice.domain.model.Permission;
+import org.example.authservice.domain.model.RemoteAccountCredential;
 import org.example.authservice.domain.model.Role;
 import org.example.authservice.domain.valueobject.Email;
 import org.example.authservice.infrastructure.web.dto.CreateAccountRequest;
@@ -13,6 +15,8 @@ import org.example.authservice.infrastructure.web.dto.RegisterRequest;
 import org.example.authservice.infrastructure.web.dto.TokenResponse;
 import org.example.authservice.infrastructure.web.entity.AccountCredentialEntity;
 import org.example.authservice.infrastructure.web.entity.AuthTokenEntity;
+import org.example.authservice.infrastructure.web.entity.PermissionEntity;
+import org.example.authservice.infrastructure.web.entity.RemoteAccountCredentialEntity;
 import org.example.authservice.infrastructure.web.entity.RoleEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -36,6 +40,11 @@ public interface AuthMapperMapstruct {
     AccountCredential toDomain(AccountCredentialEntity entity);
 
     Role toDomain(RoleEntity entity);
+
+    Permission toDomain(PermissionEntity entity);
+
+    @Mapping(target = "email", source = "email", qualifiedByName = "stringToEmail")
+    RemoteAccountCredential toRemoteDomain(RemoteAccountCredentialEntity entity);
 
     @Named("stringToEmail")
     default Email stringToEmail(String email) {

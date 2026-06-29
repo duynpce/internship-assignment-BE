@@ -50,9 +50,11 @@ public class LogoutService implements LogoutUseCase {
         log.info("Logout requested for userId: {}", userId);
 
         AuthToken storedToken = authTokenRepository.findByUserId(userId);
-        if (storedToken == null) {
-            throw new UnauthorizedException("No active session found");
+
+        if (storedToken == null || !storedToken.getAuthRefreshToken().equals(authRefreshToken)) {
+            throw new UnauthorizedException("you are not logged in");
         }
+
         return storedToken;
     }
 }

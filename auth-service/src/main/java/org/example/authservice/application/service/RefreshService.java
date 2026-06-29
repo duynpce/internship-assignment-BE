@@ -35,7 +35,6 @@ public class RefreshService implements RefreshTokenUseCase {
     @Override
     @Transactional
     public AuthTokenCommand remoteRefresh(String authRefreshToken) {
-        log.info("Remote Refresh Token: {}", authRefreshToken);
         AuthToken stored = validateAndLoad(authRefreshToken);
         String username = tokenGeneratorClient.extractUsernameFromRefreshToken(authRefreshToken);
         UUID userId     = tokenGeneratorClient.extractUserIdFromRefreshToken(authRefreshToken);
@@ -47,7 +46,6 @@ public class RefreshService implements RefreshTokenUseCase {
     @Override
     @Transactional
     public AuthTokenCommand localRefresh(String authRefreshToken) {
-        log.info("Local Refresh Token: {}", authRefreshToken);
         AuthToken stored = validateAndLoad(authRefreshToken);
         String username = tokenGeneratorClient.extractUsernameFromRefreshToken(authRefreshToken);
         UUID userId     = tokenGeneratorClient.extractUserIdFromRefreshToken(authRefreshToken);
@@ -64,8 +62,9 @@ public class RefreshService implements RefreshTokenUseCase {
         UUID userId = tokenGeneratorClient.extractUserIdFromRefreshToken(authRefreshToken);
 
         AuthToken stored = authTokenRepository.findByUserId(userId);
+
         if (stored == null || !stored.getAuthRefreshToken().equals(authRefreshToken)) {
-            throw new UnauthorizedException("Refresh token has been revoked");
+            throw new UnauthorizedException("you are not logged in");
         }
         return stored;
     }

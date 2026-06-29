@@ -24,7 +24,6 @@ public class RegisterService implements RegisterUseCase {
     private final AuthMapper authMapper;
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
-    private static final String DEFAULT_ROLE = "CUSTOMER";
 
     @Override
     @Transactional
@@ -40,7 +39,7 @@ public class RegisterService implements RegisterUseCase {
 
         AccountCredential accountCredential = authMapper.toDomain(createCredentialAccountCommand);
         accountCredential.setPassword(passwordEncoder.encode(accountCredential.getPassword()));
-        accountCredential.getRoles().add(roleRepository.findByName(DEFAULT_ROLE).orElseThrow(() -> new NotFoundException("Default role not found")));
+        accountCredential.getRoles().add(roleRepository.getDefaultRole().orElseThrow(() -> new NotFoundException("Default role not found")));
         AccountCredential saved = accountCredentialRepository.save(accountCredential);
 
 

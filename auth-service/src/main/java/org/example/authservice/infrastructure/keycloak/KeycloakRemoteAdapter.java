@@ -59,14 +59,12 @@ public class KeycloakRemoteAdapter implements KeycloakRemoteClient {
         form.add("code",          code);
         form.add("redirect_uri",  props.getRemoteRedirectUri());
 
-        log.info(props.getRemoteRedirectUri());
-        log.info("Exchanging authorization code with Keycloak, realm: {}", props.getRealm());
-
         KeycloakTokenResponse response = keycloakRemoteHttpClient.token(props.getRealm(), form);
 
         UUID userId   = tokenGeneratorClient.extractUserIdFromRemoteKeycloakAccessToken(response.getAccessToken());
         String username = tokenGeneratorClient.extractUsernameFromRemoteKeycloakAccessToken(response.getAccessToken());
+        String email    = tokenGeneratorClient.extractEmailFromRemoteKeycloakAccessToken(response.getAccessToken());
 
-        return keycloakMapper.toKeycloakSession(response, username, userId);
+        return keycloakMapper.toKeycloakSessionWithEmail(response, username, userId, email);
     }
 }

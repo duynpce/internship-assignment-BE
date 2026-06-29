@@ -31,10 +31,10 @@ public class AccountCredentialEntity {
     @Column(name = "id", updatable = false, nullable = false)
     private UUID id;
 
-    @Column(name = "username")
+    @Column(name = "username", nullable = false, unique = true)
     private String username;
 
-    @Column(name = "email", nullable = false)
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
 
     @Column(name = "password", nullable = false)

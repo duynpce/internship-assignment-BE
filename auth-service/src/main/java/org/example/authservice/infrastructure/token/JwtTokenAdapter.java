@@ -126,6 +126,11 @@ public class    JwtTokenAdapter implements TokenGeneratorClient {
     }
 
     @Override
+    public String extractEmailFromRemoteKeycloakAccessToken(String keycloakAccessToken) {
+        return keycloakRemoteDecoder.decode(keycloakAccessToken).getClaimAsString("email");
+    }
+
+    @Override
     public Set<String> extractRolesFromRefreshToken(String refreshToken) {
         return extractStringSetClaim(refreshToken, CLAIM_ROLES, getRefreshKey());
     }
