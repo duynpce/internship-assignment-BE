@@ -33,7 +33,7 @@ COPY --from=extractor /extract/spring-boot-loader/ ./
 COPY --from=extractor /extract/snapshot-dependencies/ ./
 COPY --from=extractor /extract/application/ ./
 
-EXPOSE 8083
+EXPOSE 8000
 ENTRYPOINT ["java", \
   "-XX:+UseContainerSupport", \
   "-XX:MaxRAMPercentage=75.0", \
