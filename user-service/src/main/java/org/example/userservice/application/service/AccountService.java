@@ -28,4 +28,9 @@ public class AccountService implements AccountUseCase {
         Account account = accountMapper.toDomain(command);
         accountRepository.save(account); 
     }
+
+    @Override
+    public boolean existsByPhoneNumber(String phoneNumber) {
+        return accountRepository.existsByPhoneNumber(phoneNumber);
+    }
 }

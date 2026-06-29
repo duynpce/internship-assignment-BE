@@ -1,7 +1,8 @@
 package org.example.userservice.infrastructure.web;
 
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;import org.example.userservice.application.usecase.AccountUseCase;
+import lombok.RequiredArgsConstructor;
+import org.example.userservice.application.usecase.AccountUseCase;
 import org.example.userservice.infrastructure.mapper.AccountMapperMapstruct;
 import org.example.userservice.infrastructure.web.dto.CreateAccountRequest;
 import org.example.userservice.infrastructure.web.dto.ResponseDto;
@@ -21,6 +22,11 @@ public class AccountController {
     public ResponseEntity<ResponseDto<Void>> createContributorAccount(@Valid @RequestBody CreateAccountRequest request) {
         accountUseCase.createAccount(accountMapperMapstruct.toCommand(request));
         return new ResponseEntity<>(ResponseDto.success(null, "Account created successfully"), HttpStatus.CREATED);
+    }
+
+    @GetMapping("/phone-number/{phoneNumber}")
+    public ResponseEntity<ResponseDto<Boolean>> existPhoneNumber(@PathVariable("phoneNumber") String phoneNumber) {
+        return ResponseEntity.ok(ResponseDto.success(accountUseCase.existsByPhoneNumber(phoneNumber)));
     }
 
 }
