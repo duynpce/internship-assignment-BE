@@ -1,4 +1,4 @@
-package org.example.authservice.infrastructure.config;
+package org.example.authservice.infrastructure.prop;
 
 import lombok.Getter;
 import lombok.Setter;

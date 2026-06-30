@@ -6,7 +6,7 @@ import io.jsonwebtoken.security.Keys;
 import org.example.authservice.application.client.TokenGeneratorClient;
 import org.example.authservice.application.command.AuthTokenCommand;
 import org.example.authservice.domain.exception.UnauthorizedException;
-import org.example.authservice.infrastructure.config.JwtProperties;
+import org.example.authservice.infrastructure.prop.JwtProperties;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.stereotype.Component;

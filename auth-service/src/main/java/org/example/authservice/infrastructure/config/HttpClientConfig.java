@@ -6,6 +6,8 @@ import io.netty.channel.ChannelOption;
 import org.example.authservice.domain.exception.ExternalServiceException;
 import org.example.authservice.infrastructure.keycloak.httpclient.KeycloakLocalHttpClient;
 import org.example.authservice.infrastructure.keycloak.httpclient.KeycloakRemoteHttpClient;
+import org.example.authservice.infrastructure.prop.AppProperties;
+import org.example.authservice.infrastructure.prop.KeycloakProperties;
 import org.example.authservice.infrastructure.user.httpclient.UserHttpClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

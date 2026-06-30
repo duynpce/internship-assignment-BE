@@ -20,7 +20,7 @@ import org.example.authservice.domain.model.Permission;
 import org.example.authservice.domain.model.RemoteAccountCredential;
 import org.example.authservice.domain.model.Role;
 import org.example.authservice.domain.valueobject.Email;
-import org.example.authservice.infrastructure.config.JwtProperties;
+import org.example.authservice.infrastructure.prop.JwtProperties;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

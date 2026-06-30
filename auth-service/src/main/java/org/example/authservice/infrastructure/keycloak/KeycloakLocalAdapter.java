@@ -6,7 +6,7 @@ import org.example.authservice.application.client.KeycloakLocalClient;
 import org.example.authservice.application.client.TokenGeneratorClient;
 import org.example.authservice.application.command.KeycloakTokenCommand;
 import org.example.authservice.application.mapper.KeycloakMapper;
-import org.example.authservice.infrastructure.config.KeycloakProperties;
+import org.example.authservice.infrastructure.prop.KeycloakProperties;
 import org.example.authservice.infrastructure.keycloak.httpclient.KeycloakLocalHttpClient;
 import org.example.authservice.infrastructure.keycloak.dto.KeycloakTokenResponse;
 import org.springframework.stereotype.Component;
