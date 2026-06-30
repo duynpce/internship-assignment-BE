@@ -1,0 +1,40 @@
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: auth-service
+              uri: ${AUTH_SERVICE_URL:http://auth-service:8084}
+              predicates:
+                - Path=/api/v1/auth/**
+            - id: user-service
+              uri: ${USER_SERVICE_URL:http://user-service:8081}
+              predicates:
+                - Path=/api/v1/users/**
+            - id: report-service
+              uri: ${REPORT_SERVICE_URL:http://report-service:8082}
+              predicates:
+                - Path=/api/v1/reports/**
+            - id: ticket-service
+              uri: ${TICKET_SERVICE_URL:http://ticket-service:8083}
+              predicates:
+                - Path=/api/v1/tickets/**
+
+server:
+  port: 8000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway
+
+jwt:
+  access-secret: ${JWT_ACCESS_SECRET}
+
+app:
+  clientUri: ${CLIENT_URI:http://localhost:4200}
+  user-service-url: ${USER_SERVICE_URL:http://user-service:8081}
