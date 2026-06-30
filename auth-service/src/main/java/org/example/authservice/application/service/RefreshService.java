@@ -7,12 +7,11 @@ import org.example.authservice.application.client.KeycloakRemoteClient;
 import org.example.authservice.application.client.TokenGeneratorClient;
 import org.example.authservice.application.command.AuthTokenCommand;
 import org.example.authservice.application.command.KeycloakTokenCommand;
-import org.example.authservice.application.repository.AccountCredentialRepository;
 import org.example.authservice.application.repository.AuthTokenRepository;
 import org.example.authservice.application.usecase.RefreshTokenUseCase;
 import org.example.authservice.domain.exception.UnauthorizedException;
 import org.example.authservice.domain.model.AuthToken;
-import org.example.authservice.infrastructure.config.JwtProperties;
+import org.example.authservice.infrastructure.prop.JwtProperties;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

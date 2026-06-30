@@ -5,7 +5,7 @@ import org.example.authservice.application.mapper.AuthMapper;
 import org.example.authservice.application.repository.AuthTokenRepository;
 import org.example.authservice.domain.exception.UnauthorizedException;
 import org.example.authservice.domain.model.AuthToken;
-import org.example.authservice.infrastructure.config.JwtProperties;
+import org.example.authservice.infrastructure.prop.JwtProperties;
 import org.example.authservice.infrastructure.web.data.springdata.SpringDataAuthTokenRepository;
 import org.example.authservice.infrastructure.web.entity.AuthTokenEntity;
 import org.springframework.stereotype.Component;

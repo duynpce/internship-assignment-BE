@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.authservice.application.client.KeycloakRemoteClient;
 import org.example.authservice.application.client.TokenGeneratorClient;
 import org.example.authservice.application.command.KeycloakTokenCommand;
-import org.example.authservice.infrastructure.config.KeycloakProperties;
+import org.example.authservice.infrastructure.prop.KeycloakProperties;
 import org.example.authservice.infrastructure.keycloak.httpclient.KeycloakRemoteHttpClient;
 import org.example.authservice.infrastructure.keycloak.dto.KeycloakTokenResponse;
 import org.example.authservice.application.mapper.KeycloakMapper;

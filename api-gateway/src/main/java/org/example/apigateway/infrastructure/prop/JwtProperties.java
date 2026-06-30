@@ -1,4 +1,4 @@
-package org.example.authservice.infrastructure.config;
+package org.example.apigateway.infrastructure.prop;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -9,7 +9,4 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @Setter
 public class JwtProperties {
     private String accessSecret;
-    private String refreshSecret;
-    private long accessExpirationMinutes;
-    private long refreshExpirationDay;
 }

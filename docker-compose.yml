@@ -131,6 +131,14 @@ services:
   api-gateway:
     build: ./api-gateway
     container_name: api-gateway
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - JWT_ACCESS_SECRET=bXktYWNjZXNzLXNlY3JldC1rZXktZm9yLXNob3BwaW5nLWFwcC0yNTY=
+      - CLIENT_URI=http://localhost:4200
+      - AUTH_SERVICE_URL=http://auth-service:8084
+      - USER_SERVICE_URL=http://user-service:8081
+      - REPORT_SERVICE_URL=http://report-service:8082
+      - TICKET_SERVICE_URL=http://ticket-service:8083
     ports:
       - "8000:8000"
     depends_on:
