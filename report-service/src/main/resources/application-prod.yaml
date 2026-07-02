@@ -3,7 +3,7 @@ spring:
     name: report-service
 
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/shopping_db}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/report_db}
     username: ${SPRING_DATASOURCE_USERNAME:myuser}
     password: ${SPRING_DATASOURCE_PASSWORD:secret}
     driver-class-name: org.postgresql.Driver
@@ -23,6 +23,9 @@ spring:
     baseline-on-migrate: true
 
 server:
-  port: 8081
+  port: 8082
   servlet:
     context-path: /api/v1/reports
+
+app:
+  user-service-url: ${USER_SERVICE_URL:http://localhost:8081}

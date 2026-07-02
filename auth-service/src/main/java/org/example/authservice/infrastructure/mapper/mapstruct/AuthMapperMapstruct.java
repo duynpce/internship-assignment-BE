@@ -39,12 +39,16 @@ public interface AuthMapperMapstruct {
     @Mapping(target = "email", source = "email", qualifiedByName = "stringToEmail")
     AccountCredential toDomain(AccountCredentialEntity entity);
 
+
     Role toDomain(RoleEntity entity);
 
     Permission toDomain(PermissionEntity entity);
 
     @Mapping(target = "email", source = "email", qualifiedByName = "stringToEmail")
     RemoteAccountCredential toRemoteDomain(RemoteAccountCredentialEntity entity);
+
+    @Mapping(target = "email", source = "email", qualifiedByName = "emailToString")
+    RemoteAccountCredentialEntity toEntity(RemoteAccountCredential domain);
 
     @Named("stringToEmail")
     default Email stringToEmail(String email) {

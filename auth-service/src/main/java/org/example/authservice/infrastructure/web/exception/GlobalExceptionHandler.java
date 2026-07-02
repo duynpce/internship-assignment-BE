@@ -1,4 +1,4 @@
-package org.example.authservice.infrastructure.exception;
+package org.example.authservice.infrastructure.web.exception;
 
 import org.example.authservice.domain.exception.*;
 import org.example.authservice.infrastructure.web.dto.ResponseDto;

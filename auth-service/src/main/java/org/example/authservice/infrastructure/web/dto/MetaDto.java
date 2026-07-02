@@ -1,9 +1,14 @@
 package org.example.authservice.infrastructure.web.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.example.authservice.infrastructure.web.dto.PaginationDto;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class MetaDto {
     private long totalItems;

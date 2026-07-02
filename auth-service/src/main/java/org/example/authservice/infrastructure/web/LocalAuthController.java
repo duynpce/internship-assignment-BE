@@ -72,7 +72,7 @@ public class LocalAuthController {
             @CookieValue(required = false) String refreshToken,
             HttpServletResponse response) {
 
-        logoutUseCase.remoteLogout(refreshToken);
+        logoutUseCase.localLogout(refreshToken);
         response.addHeader(HttpHeaders.SET_COOKIE, clearRefreshCookie().toString());
         return ResponseEntity.ok(ResponseDto.success(null));
     }

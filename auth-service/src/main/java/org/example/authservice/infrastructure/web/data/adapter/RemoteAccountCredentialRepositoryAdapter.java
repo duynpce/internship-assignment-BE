@@ -37,21 +37,7 @@ public class RemoteAccountCredentialRepositoryAdapter implements RemoteAccountCr
 
     @Override
     public RemoteAccountCredential save(RemoteAccountCredential domain) {
-        RemoteAccountCredentialEntity entity = springDataRepo.findById(domain.getId())
-                .orElseGet(() -> {
-                    RemoteAccountCredentialEntity e = new RemoteAccountCredentialEntity();
-                    e.setId(domain.getId());
-                    e.setEmail(domain.getEmail().getValue());
-                    e.setRoles(new HashSet<>());
-                    return e;
-                });
-
-        // Attach role entities from the shared roles table
-        Set<RoleEntity> roleEntities = domain.getRoles().stream()
-                .map(role -> springDataRoleRepository.findById(role.getId())
-                        .orElseThrow(() -> new NotFoundException("Role not found: " + role.getId())))
-                .collect(Collectors.toSet());
-        entity.setRoles(roleEntities);
+        RemoteAccountCredentialEntity entity = authMapper.toEntity(domain);
 
         return authMapper.toRemoteDomain(springDataRepo.save(entity));
     }

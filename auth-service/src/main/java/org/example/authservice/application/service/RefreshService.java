@@ -69,9 +69,10 @@ public class RefreshService implements RefreshTokenUseCase {
     }
 
     private AuthTokenCommand saveNewToken(UUID userId, String username, KeycloakTokenCommand keycloakSession, String authRefreshToken) {
+        Set<String> roles       = tokenGeneratorClient.extractRolesFromRefreshToken(authRefreshToken);
         Set<String> permissions = tokenGeneratorClient.extractPermissionsFromRefreshToken(authRefreshToken);
 
-        AuthTokenCommand newAuthToken = tokenGeneratorClient.generate(username, userId, permissions);
+        AuthTokenCommand newAuthToken = tokenGeneratorClient.generate(username, userId, roles, permissions);
 
         AuthToken updatedRecord = new AuthToken(
                 userId,

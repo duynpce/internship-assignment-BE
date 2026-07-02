@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL) // null --> not created in json response
 public class ResponseDto<T> {
-    boolean isSuccess;
+    Boolean isSuccess;
     private String message;
     private T data;
     private MetaDto metaData;
