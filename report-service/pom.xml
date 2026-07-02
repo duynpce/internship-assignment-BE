@@ -28,6 +28,7 @@
 	</scm>
 	<properties>
 		<java.version>21</java.version>
+		<jasperreports.version>7.0.7</jasperreports.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -36,24 +37,16 @@
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-redis</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-security-oauth2-authorization-server</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-security-oauth2-client</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security-oauth2-resource-server</artifactId>
 		</dependency>
+		<dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
+        </dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-webmvc</artifactId>
@@ -81,26 +74,30 @@
 			<artifactId>lombok</artifactId>
 			<optional>true</optional>
 		</dependency>
+
+		<!-- JasperReports: builds PDF / XLSX reports from the data returned by user-service -->
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-jpa-test</artifactId>
-			<scope>test</scope>
+			<groupId>net.sf.jasperreports</groupId>
+			<artifactId>jasperreports</artifactId>
+			<version>${jasperreports.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-redis-test</artifactId>
-			<scope>test</scope>
+			<groupId>net.sf.jasperreports</groupId>
+			<artifactId>jasperreports-fonts</artifactId>
+			<version>${jasperreports.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-security-oauth2-authorization-server-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-security-oauth2-client-test</artifactId>
-			<scope>test</scope>
-		</dependency>
+            <groupId>net.sf.jasperreports</groupId>
+            <artifactId>jasperreports-pdf</artifactId>
+            <version>${jasperreports.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.sf.jasperreports</groupId>
+            <artifactId>jasperreports-jdt</artifactId>
+            <version>${jasperreports.version}</version>
+        </dependency>
+
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security-oauth2-resource-server-test</artifactId>
@@ -131,58 +128,84 @@
 			<artifactId>testcontainers-postgresql</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
+            <version>1.5.5.Final</version>
+        </dependency>
 	</dependencies>
 
 	<build>
 		<plugins>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-				<configuration>
-					<excludes>
-						<exclude>
-							<groupId>org.projectlombok</groupId>
-							<artifactId>lombok</artifactId>
-						</exclude>
-					</excludes>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>default-compile</id>
-						<phase>compile</phase>
-						<goals>
-							<goal>compile</goal>
-						</goals>
-						<configuration>
-							<annotationProcessorPaths>
-								<path>
-									<groupId>org.projectlombok</groupId>
-									<artifactId>lombok</artifactId>
-								</path>
-							</annotationProcessorPaths>
-						</configuration>
-					</execution>
-					<execution>
-						<id>default-testCompile</id>
-						<phase>test-compile</phase>
-						<goals>
-							<goal>testCompile</goal>
-						</goals>
-						<configuration>
-							<annotationProcessorPaths>
-								<path>
-									<groupId>org.projectlombok</groupId>
-									<artifactId>lombok</artifactId>
-								</path>
-							</annotationProcessorPaths>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
+        			<plugin>
+        				<groupId>org.springframework.boot</groupId>
+        				<artifactId>spring-boot-maven-plugin</artifactId>
+        				<configuration>
+        					<excludes>
+        						<exclude>
+        							<groupId>org.projectlombok</groupId>
+        							<artifactId>lombok</artifactId>
+        						</exclude>
+        					</excludes>
+        				</configuration>
+        			</plugin>
+        			<plugin>
+        				<groupId>org.apache.maven.plugins</groupId>
+        				<artifactId>maven-compiler-plugin</artifactId>
+        				<executions>
+        					<execution>
+        						<id>default-compile</id>
+        						<phase>compile</phase>
+        						<goals>
+        							<goal>compile</goal>
+        						</goals>
+        						<configuration>
+        							<annotationProcessorPaths>
+        								<path>
+        									<groupId>org.projectlombok</groupId>
+        									<artifactId>lombok</artifactId>
+        								</path>
+        								<path>
+        									<groupId>org.projectlombok</groupId>
+        									<artifactId>lombok-mapstruct-binding</artifactId>
+        									<version>0.2.0</version>
+        								</path>
+        								<path>
+        									<groupId>org.mapstruct</groupId>
+        									<artifactId>mapstruct-processor</artifactId>
+        									<version>1.5.5.Final</version>
+        								</path>
+        							</annotationProcessorPaths>
+        						</configuration>
+        					</execution>
+        					<execution>
+        						<id>default-testCompile</id>
+        						<phase>test-compile</phase>
+        						<goals>
+        							<goal>testCompile</goal>
+        						</goals>
+        						<configuration>
+        							<annotationProcessorPaths>
+        								<path>
+        									<groupId>org.projectlombok</groupId>
+        									<artifactId>lombok</artifactId>
+        								</path>
+
+        								 <path>
+                                            <groupId>org.projectlombok</groupId>
+                                            <artifactId>lombok-mapstruct-binding</artifactId>
+                                            <version>0.2.0</version>
+                                         </path>
+        								 <path>
+                                                <groupId>org.mapstruct</groupId>
+                                                <artifactId>mapstruct-processor</artifactId>
+                                                <version>1.5.5.Final</version>
+                                        </path>
+        							</annotationProcessorPaths>
+        						</configuration>
+        					</execution>
+        				</executions>
+        			</plugin>
 		</plugins>
 	</build>
 

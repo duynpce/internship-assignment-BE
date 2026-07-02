@@ -3,7 +3,7 @@ spring:
     name: ticket-service
 
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/shopping_db}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/ticket_db}
     username: ${SPRING_DATASOURCE_USERNAME:myuser}
     password: ${SPRING_DATASOURCE_PASSWORD:secret}
     driver-class-name: org.postgresql.Driver
