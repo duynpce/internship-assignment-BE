@@ -24,12 +24,13 @@ public class AuthTokenRepositoryAdapter implements AuthTokenRepository {
 
     @Override
     public void save(AuthToken authToken) {
-        AuthTokenEntity entity = springDataRepo.findById(authToken.getUserId()).orElse(new AuthTokenEntity());
+        AuthTokenEntity entity = new AuthTokenEntity();
 
         entity.setUserId(authToken.getUserId());
         entity.setAuthRefreshToken(authToken.getAuthRefreshToken());
         entity.setKeycloakRefreshToken(authToken.getKeycloakRefreshToken());
         entity.setSessionExpireAt(Instant.now().plus(jwtProperties.getRefreshExpirationDay(), ChronoUnit.DAYS));
+
 
         springDataRepo.save(entity);
     }

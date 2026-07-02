@@ -59,9 +59,10 @@ public class CallbackService implements CallbackUseCase {
                 .findByIdWithRoles(userId)
                 .orElseGet(() -> provisionRemoteAccount(userId, keycloakSession.email()));
 
+        Set<String> roles = extractRoleNames(account.getRoles());
         Set<String> permissions = extractPermissions(account.getRoles());
 
-        return buildAndSaveAuthToken(keycloakSession.username(), userId, keycloakSession.refreshToken(), permissions);
+        return buildAndSaveAuthToken(keycloakSession.username(), userId, keycloakSession.refreshToken(), roles, permissions);
     }
 
     // ── Local (user-federation Keycloak) ─────────────────────────────────────
@@ -75,9 +76,10 @@ public class CallbackService implements CallbackUseCase {
         UUID userId = keycloakSession.userId();
 
         AccountCredential account = accountCredentialRepository.findByIdWithRolesAndPermissions(userId);
+        Set<String> roles = extractRoleNames(account.getRoles());
         Set<String> permissions = extractPermissions(account.getRoles());
 
-        return buildAndSaveAuthToken(keycloakSession.username(), userId, keycloakSession.refreshToken(), permissions);
+        return buildAndSaveAuthToken(keycloakSession.username(), userId, keycloakSession.refreshToken(), roles, permissions);
     }
 
     // ── Private helpers ───────────────────────────────────────────────────────
@@ -100,6 +102,12 @@ public class CallbackService implements CallbackUseCase {
         return saved;
     }
 
+    private Set<String> extractRoleNames(Set<Role> roles) {
+        return roles.stream()
+                .map(Role::getName)
+                .collect(Collectors.toSet());
+    }
+
     private Set<String> extractPermissions(Set<Role> roles) {
         return roles.stream()
                 .flatMap(role -> role.getPermissions().stream())
@@ -109,8 +117,9 @@ public class CallbackService implements CallbackUseCase {
 
     private AuthTokenCommand buildAndSaveAuthToken(String username, UUID userId,
                                                     String keycloakRefreshToken,
+                                                    Set<String> roles,
                                                     Set<String> permissions) {
-        AuthTokenCommand authToken = tokenGeneratorClient.generate(username, userId, permissions);
+        AuthTokenCommand authToken = tokenGeneratorClient.generate(username, userId, roles, permissions);
 
         AuthToken authTokenRecord = new AuthToken(
                 userId,

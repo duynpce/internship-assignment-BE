@@ -44,9 +44,9 @@ public class    JwtTokenAdapter implements TokenGeneratorClient {
     // ── Interface methods ────────────────────────────────────────────────────
 
     @Override
-    public AuthTokenCommand generate(String username, UUID userId, Set<String> permissions) {
-        String accessToken  = generateAccessToken(username, userId, permissions);
-        String refreshToken = generateRefreshToken(username, userId, permissions);
+    public AuthTokenCommand generate(String username, UUID userId, Set<String> roles, Set<String> permissions) {
+        String accessToken  = generateAccessToken(username, userId, roles, permissions);
+        String refreshToken = generateRefreshToken(username, userId, roles, permissions);
         return new AuthTokenCommand(accessToken, refreshToken, "Bearer", getExpiresInSeconds());
     }
 
@@ -131,6 +131,11 @@ public class    JwtTokenAdapter implements TokenGeneratorClient {
     }
 
     @Override
+    public Set<String> extractRolesFromAccessToken(String accessToken) {
+        return extractStringSetClaim(accessToken, CLAIM_ROLES, getAccessKey());
+    }
+
+    @Override
     public Set<String> extractRolesFromRefreshToken(String refreshToken) {
         return extractStringSetClaim(refreshToken, CLAIM_ROLES, getRefreshKey());
     }
@@ -143,21 +148,22 @@ public class    JwtTokenAdapter implements TokenGeneratorClient {
 
     // ── Private: generate ────────────────────────────────────────────────────
 
-    private String generateAccessToken(String username, UUID userId, Set<String> permissions) {
+    private String generateAccessToken(String username, UUID userId, Set<String> roles, Set<String> permissions) {
         long expirationMs = TimeUnit.MINUTES.toMillis(jwtProperties.getAccessExpirationMinutes());
-        return buildToken(username, userId, permissions, getAccessKey(), expirationMs);
+        return buildToken(username, userId, roles, permissions, getAccessKey(), expirationMs);
     }
 
-    private String generateRefreshToken(String username, UUID userId, Set<String> permissions) {
+    private String generateRefreshToken(String username, UUID userId, Set<String> roles, Set<String> permissions) {
         long expirationMs = TimeUnit.DAYS.toMillis(jwtProperties.getRefreshExpirationDay());
-        return buildToken(username, userId, permissions, getRefreshKey(), expirationMs);
+        return buildToken(username, userId, roles, permissions, getRefreshKey(), expirationMs);
     }
 
-    private String buildToken(String username, UUID userId, Set<String> permissions, SecretKey key, long expirationMs) {
+    private String buildToken(String username, UUID userId, Set<String> roles, Set<String> permissions, SecretKey key, long expirationMs) {
         long now = System.currentTimeMillis();
         return Jwts.builder()
                 .subject(username)
                 .claim(CLAIM_USER_ID, userId.toString())
+                .claim(CLAIM_ROLES, normalizeClaims(roles))
                 .claim(CLAIM_PERMISSIONS, normalizeClaims(permissions))
                 .issuedAt(new Date(now))
                 .expiration(new Date(now + expirationMs))

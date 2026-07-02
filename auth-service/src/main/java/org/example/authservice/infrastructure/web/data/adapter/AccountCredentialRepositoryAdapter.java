@@ -22,18 +22,7 @@ public class AccountCredentialRepositoryAdapter implements AccountCredentialRepo
     @Override
     public AccountCredential save(AccountCredential domain) {
         AccountCredentialEntity entity;
-
-        // null id --> create
-        if(domain.getId() == null){
-            entity =  mapper.toEntity(domain);
-        }
-
-        // existing id --> update
-        else{
-            entity = springDataRepo.findById(domain.getId()).orElseThrow(
-                    () -> new NotFoundException("AccountCredentialEntity not found with id: " + domain.getId())
-            );
-        }
+        entity =  mapper.toEntity(domain);
 
         return mapper.toDomain(springDataRepo.save(entity));
     }

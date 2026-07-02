@@ -7,7 +7,7 @@ import java.util.UUID;
 
 public interface TokenGeneratorClient {
 
-    AuthTokenCommand generate(String username, UUID userId, Set<String> permissions);
+    AuthTokenCommand generate(String username, UUID userId, Set<String> roles, Set<String> permissions);
     long getExpiresInSeconds();
     boolean isRefreshTokenExpired(String token);
     boolean isAccessTokenExpired(String token);
@@ -18,6 +18,7 @@ public interface TokenGeneratorClient {
     String extractUsernameFromRefreshToken(String refreshToken);
     UUID extractUserIdFromAccessToken(String accessToken);
     UUID extractUserIdFromRefreshToken(String refreshToken);
+    Set<String> extractRolesFromAccessToken(String accessToken);
     Set<String> extractRolesFromRefreshToken(String refreshToken);
     Set<String> extractPermissionsFromRefreshToken(String refreshToken);
 

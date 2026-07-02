@@ -31,4 +31,5 @@ public interface AuthMapper {
     Role toDomain(RoleEntity entity);
 
     RemoteAccountCredential toRemoteDomain(RemoteAccountCredentialEntity entity);
+    RemoteAccountCredentialEntity toEntity(RemoteAccountCredential domain);
 }

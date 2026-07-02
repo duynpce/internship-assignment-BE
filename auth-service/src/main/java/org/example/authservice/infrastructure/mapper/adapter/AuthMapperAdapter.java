@@ -67,6 +67,14 @@ public class AuthMapperAdapter implements AuthMapper {
     }
 
     @Override
+    public RemoteAccountCredentialEntity toEntity(RemoteAccountCredential domain) {
+        if (domain == null) {
+            return null;
+        }
+        return mapstructMapper.toEntity(domain);
+    }
+
+    @Override
     public AccountCredential toDomain(CreateCredentialAccountCommand domain) {
         if (domain == null) {
             return null;
