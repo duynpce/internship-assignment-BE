@@ -1,11 +1,15 @@
 package org.example.userservice.infrastructure.web.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.example.userservice.infrastructure.web.dto.PaginationDto;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class MetaDto {
     private long totalItems;
     private int totalPages;
