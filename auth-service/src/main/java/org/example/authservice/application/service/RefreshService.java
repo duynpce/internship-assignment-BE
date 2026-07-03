@@ -2,8 +2,7 @@ package org.example.authservice.application.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.authservice.application.client.KeycloakLocalClient;
-import org.example.authservice.application.client.KeycloakRemoteClient;
+import org.example.authservice.application.client.KeycloakClient;
 import org.example.authservice.application.client.TokenGeneratorClient;
 import org.example.authservice.application.command.AuthTokenCommand;
 import org.example.authservice.application.command.KeycloakTokenCommand;
@@ -25,8 +24,7 @@ import java.util.UUID;
 @Slf4j
 public class RefreshService implements RefreshTokenUseCase {
 
-    private final KeycloakRemoteClient keycloakRemoteClient;
-    private final KeycloakLocalClient keycloakLocalClient;
+    private final KeycloakClient keycloakClient;
     private final TokenGeneratorClient tokenGeneratorClient;
     private final AuthTokenRepository authTokenRepository;
     private final JwtProperties jwtProperties;
@@ -34,39 +32,50 @@ public class RefreshService implements RefreshTokenUseCase {
     @Override
     @Transactional
     public AuthTokenCommand remoteRefresh(String authRefreshToken) {
-        AuthToken stored = validateAndLoad(authRefreshToken);
+        validateToken(authRefreshToken);
+        AuthToken stored = loadToken(authRefreshToken);
         String username = tokenGeneratorClient.extractUsernameFromRefreshToken(authRefreshToken);
         UUID userId     = tokenGeneratorClient.extractUserIdFromRefreshToken(authRefreshToken);
 
-        KeycloakTokenCommand keycloakSession = keycloakRemoteClient.refresh(stored.getKeycloakRefreshToken(), username);
+        if (stored == null || !stored.getAuthRefreshToken().equals(authRefreshToken)) {
+            throw new UnauthorizedException("You are not logged in");
+        }
+
+        KeycloakTokenCommand keycloakSession = keycloakClient.refresh(stored.getKeycloakRefreshToken(), username);
         return saveNewToken(userId, username, keycloakSession, authRefreshToken);
     }
 
     @Override
     @Transactional
     public AuthTokenCommand localRefresh(String authRefreshToken) {
-        AuthToken stored = validateAndLoad(authRefreshToken);
+        validateToken(authRefreshToken);
+        AuthToken stored = loadToken(authRefreshToken);
         String username = tokenGeneratorClient.extractUsernameFromRefreshToken(authRefreshToken);
         UUID userId     = tokenGeneratorClient.extractUserIdFromRefreshToken(authRefreshToken);
 
-        KeycloakTokenCommand keycloakSession = keycloakLocalClient.refresh(stored.getKeycloakRefreshToken(), username);
-        return saveNewToken(userId, username, keycloakSession, authRefreshToken);
+        if (stored == null || !stored.getAuthRefreshToken().equals(authRefreshToken)) {
+            throw new UnauthorizedException("You are not logged in");
+        }
+
+        return saveNewToken(userId, username, null, authRefreshToken);
     }
 
-    private AuthToken validateAndLoad(String authRefreshToken) {
+
+    private void validateToken(String authRefreshToken) {
         if (authRefreshToken == null || authRefreshToken.isBlank()) {
             throw new UnauthorizedException("Refresh token must not be empty");
         }
+
         tokenGeneratorClient.validateRefreshToken(authRefreshToken);
+    }
+
+    private AuthToken loadToken(String authRefreshToken) {
         UUID userId = tokenGeneratorClient.extractUserIdFromRefreshToken(authRefreshToken);
 
-        AuthToken stored = authTokenRepository.findByUserId(userId);
-
-        if (stored == null || !stored.getAuthRefreshToken().equals(authRefreshToken)) {
-            throw new UnauthorizedException("you are not logged in");
-        }
-        return stored;
+        return authTokenRepository.findByUserId(userId);
     }
+
+
 
     private AuthTokenCommand saveNewToken(UUID userId, String username, KeycloakTokenCommand keycloakSession, String authRefreshToken) {
         Set<String> roles       = tokenGeneratorClient.extractRolesFromRefreshToken(authRefreshToken);
@@ -77,7 +86,7 @@ public class RefreshService implements RefreshTokenUseCase {
         AuthToken updatedRecord = new AuthToken(
                 userId,
                 newAuthToken.refreshToken(),
-                keycloakSession.refreshToken(),
+                keycloakSession == null ? null : keycloakSession.refreshToken(),
                 Instant.now().plus(jwtProperties.getRefreshExpirationDay(), ChronoUnit.DAYS)
         );
 

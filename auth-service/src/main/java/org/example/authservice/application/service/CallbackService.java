@@ -2,24 +2,18 @@ package org.example.authservice.application.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.authservice.application.client.KeycloakLocalClient;
-import org.example.authservice.application.client.KeycloakRemoteClient;
+import org.example.authservice.application.client.KeycloakClient;
 import org.example.authservice.application.client.TokenGeneratorClient;
 import org.example.authservice.application.command.AuthTokenCommand;
 import org.example.authservice.application.command.CallbackCommand;
 import org.example.authservice.application.command.KeycloakTokenCommand;
 import org.example.authservice.application.repository.AccountCredentialRepository;
 import org.example.authservice.application.repository.AuthTokenRepository;
-import org.example.authservice.application.repository.RemoteAccountCredentialRepository;
-import org.example.authservice.application.repository.RoleRepository;
 import org.example.authservice.application.usecase.CallbackUseCase;
-import org.example.authservice.domain.exception.NotFoundException;
 import org.example.authservice.domain.model.AccountCredential;
 import org.example.authservice.domain.model.AuthToken;
 import org.example.authservice.domain.model.Permission;
-import org.example.authservice.domain.model.RemoteAccountCredential;
 import org.example.authservice.domain.model.Role;
-import org.example.authservice.domain.valueobject.Email;
 import org.example.authservice.infrastructure.prop.JwtProperties;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,72 +29,37 @@ import java.util.stream.Collectors;
 @Slf4j
 public class CallbackService implements CallbackUseCase {
 
-    private final KeycloakRemoteClient keycloakRemoteClient;
-    private final KeycloakLocalClient keycloakLocalClient;
+    private final KeycloakClient keycloakClient;
     private final TokenGeneratorClient tokenGeneratorClient;
     private final AuthTokenRepository authTokenRepository;
     private final AccountCredentialRepository accountCredentialRepository;
-    private final RemoteAccountCredentialRepository remoteAccountCredentialRepository;
-    private final RoleRepository roleRepository;
     private final JwtProperties jwtProperties;
 
-    // ── Remote (Google, GitHub, …) ────────────────────────────────────────────
 
     @Override
     @Transactional
     public AuthTokenCommand remoteCallback(CallbackCommand command) {
         log.info("Remote OAuth2 callback received, exchanging authorization code for tokens");
 
-        KeycloakTokenCommand keycloakSession = keycloakRemoteClient.exchangeCode(command.code());
-        UUID userId = keycloakSession.userId();
+        KeycloakTokenCommand keycloakSession = keycloakClient.exchangeCode(command.code());
+        UUID keycloakUserId = keycloakSession.userId();
+        String username = keycloakSession.username();
 
-        // Find or auto-provision remote account
-        RemoteAccountCredential account = remoteAccountCredentialRepository
-                .findByIdWithRoles(userId)
-                .orElseGet(() -> provisionRemoteAccount(userId, keycloakSession.email()));
+        AccountCredential accountCredential = accountCredentialRepository.findByUsername(username);
 
-        Set<String> roles = extractRoleNames(account.getRoles());
-        Set<String> permissions = extractPermissions(account.getRoles());
+        //if keycloak id not exist then save it
+        if(accountCredential.getKeycloakId() == null){
+            accountCredential.setKeycloakId(keycloakUserId);
+            accountCredentialRepository.save(accountCredential);
+        }
 
-        return buildAndSaveAuthToken(keycloakSession.username(), userId, keycloakSession.refreshToken(), roles, permissions);
+
+        Set<String> roles = extractRoleNames(accountCredential.getRoles());
+        Set<String> permissions = extractPermissions(accountCredential.getRoles());
+
+        return buildAndSaveAuthToken(keycloakSession.username(), accountCredential.getId(), keycloakSession.refreshToken(), roles, permissions);
     }
 
-    // ── Local (user-federation Keycloak) ─────────────────────────────────────
-
-    @Override
-    @Transactional
-    public AuthTokenCommand localCallback(CallbackCommand command) {
-        log.info("Local OAuth2 callback received, exchanging authorization code for tokens");
-
-        KeycloakTokenCommand keycloakSession = keycloakLocalClient.exchangeCode(command.code());
-        UUID userId = keycloakSession.userId();
-
-        AccountCredential account = accountCredentialRepository.findByIdWithRolesAndPermissions(userId);
-        Set<String> roles = extractRoleNames(account.getRoles());
-        Set<String> permissions = extractPermissions(account.getRoles());
-
-        return buildAndSaveAuthToken(keycloakSession.username(), userId, keycloakSession.refreshToken(), roles, permissions);
-    }
-
-    // ── Private helpers ───────────────────────────────────────────────────────
-
-    /**
-     * Creates a brand-new {@link RemoteAccountCredential} for a first-time remote login,
-     * assigning the default CUSTOMER role.
-     */
-    private RemoteAccountCredential provisionRemoteAccount(UUID userId, String rawEmail) {
-        log.info("Provisioning new remote account for userId: {}", userId);
-
-        Role defaultRole = roleRepository.getDefaultRole()
-                .orElseThrow(() -> new NotFoundException("Default role '" + RoleRepository.DEFAULT_ROLE_NAME + "' not found"));
-
-        RemoteAccountCredential newAccount = new RemoteAccountCredential(userId, new Email(rawEmail));
-        newAccount.addRole(defaultRole);
-
-        RemoteAccountCredential saved = remoteAccountCredentialRepository.save(newAccount);
-        log.info("Remote account provisioned for userId: {}", userId);
-        return saved;
-    }
 
     private Set<String> extractRoleNames(Set<Role> roles) {
         return roles.stream()

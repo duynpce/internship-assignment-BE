@@ -89,13 +89,8 @@ public class SecurityConfig {
 
 
     @Bean
-    public JwtDecoder keycloakLocalJwtDecoder() {
-        return NimbusJwtDecoder.withJwkSetUri(keycloakProperties.getServerLocalUrl() + "/realms/" + keycloakProperties.getRealm() + "/protocol/openid-connect/certs").build();
-    }
-
-    @Bean
-    public JwtDecoder keycloakRemoteJwtDecoder() {
-        return NimbusJwtDecoder.withJwkSetUri(keycloakProperties.getServerRemoteUrl() + "/realms/" + keycloakProperties.getRealm() + "/protocol/openid-connect/certs").build();
+    public JwtDecoder keycloakJwtDecoder() {
+        return NimbusJwtDecoder.withJwkSetUri(keycloakProperties.getServerUrl() + "/realms/" + keycloakProperties.getRealm() + "/protocol/openid-connect/certs").build();
     }
 
     @Bean

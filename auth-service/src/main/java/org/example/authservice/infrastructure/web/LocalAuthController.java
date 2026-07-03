@@ -6,16 +6,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.authservice.application.command.AuthTokenCommand;
 import org.example.authservice.application.command.CallbackCommand;
+import org.example.authservice.application.command.LoginCommand;
 import org.example.authservice.application.mapper.AuthMapper;
-import org.example.authservice.application.usecase.CallbackUseCase;
-import org.example.authservice.application.usecase.ExistUseCase;
-import org.example.authservice.application.usecase.LogoutUseCase;
-import org.example.authservice.application.usecase.RefreshTokenUseCase;
-import org.example.authservice.application.usecase.RegisterUseCase;
-import org.example.authservice.infrastructure.web.dto.CallbackRequest;
-import org.example.authservice.infrastructure.web.dto.RegisterRequest;
-import org.example.authservice.infrastructure.web.dto.ResponseDto;
-import org.example.authservice.infrastructure.web.dto.TokenResponse;
+import org.example.authservice.application.usecase.*;
+import org.example.authservice.infrastructure.web.dto.*;
 import org.springframework.boot.web.server.Cookie;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -33,27 +27,30 @@ public class LocalAuthController {
     private final RefreshTokenUseCase refreshTokenUseCase;
     private final AuthMapper authMapper;
     private final LogoutUseCase logoutUseCase;
-    private final CallbackUseCase callbackUseCase;
     private final RegisterUseCase registerUseCase;
     private final ExistUseCase existUseCase;
+    private final LoginUseCase loginUseCase;
+
+    @PostMapping("/login")
+    public ResponseEntity<ResponseDto<TokenResponse>> login(
+            @Valid @RequestBody LoginRequest loginRequest,
+            HttpServletResponse response
+            ) {
+
+        AuthTokenCommand authTokenCommand=loginUseCase.login(new LoginCommand(loginRequest.getUsername(), loginRequest.getPassword()));
+
+        TokenResponse tokenResponse = authMapper.toDto(authTokenCommand);
+
+
+        response.addHeader(HttpHeaders.SET_COOKIE, buildRefreshCookie(authTokenCommand.refreshToken()).toString());
+        return ResponseEntity.ok(ResponseDto.success(tokenResponse));
+    }
 
     @PostMapping("/register")
     public ResponseEntity<ResponseDto<String>> register(@Valid @RequestBody RegisterRequest registerRequest) {
         registerUseCase.register(authMapper.toCommand(registerRequest));
 
         return ResponseEntity.ok(ResponseDto.success(null, "registered successfully"));
-    }
-
-    @PostMapping("/callback")
-    public ResponseEntity<ResponseDto<TokenResponse>> callback(
-            @RequestBody CallbackRequest request,
-            HttpServletResponse response) {
-        log.info("Received local callback with code: {}", request.code());
-
-        AuthTokenCommand token = callbackUseCase.localCallback(new CallbackCommand(request.code()));
-        TokenResponse tokenDto = authMapper.toDto(token);
-        response.addHeader(HttpHeaders.SET_COOKIE, buildRefreshCookie(token.refreshToken()).toString());
-        return ResponseEntity.ok(ResponseDto.success(tokenDto));
     }
 
     @PostMapping("/refresh")
@@ -105,7 +102,7 @@ public class LocalAuthController {
                 .secure(true)
                 .path("/")
                 .maxAge(Duration.ofDays(1))
-                .sameSite(Cookie.SameSite.NONE.toString())
+                .sameSite(Cookie.SameSite.STRICT.toString())
                 .build();
     }
 
@@ -115,7 +112,7 @@ public class LocalAuthController {
                 .secure(true)
                 .path("/")
                 .maxAge(0)
-                .sameSite(Cookie.SameSite.NONE.toString())
+                .sameSite(Cookie.SameSite.STRICT.toString())
                 .build();
     }
 }
