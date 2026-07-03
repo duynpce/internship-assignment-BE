@@ -1,8 +1,10 @@
 package org.example.authservice.application.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.authservice.application.client.KeycloakClient;
 import org.example.authservice.application.client.UserClient;
 import org.example.authservice.application.command.CreateCredentialAccountCommand;
+import org.example.authservice.application.command.CreateKeycloakUserCommand;
 import org.example.authservice.application.command.RegisterCommand;
 import org.example.authservice.application.mapper.AuthMapper;
 import org.example.authservice.application.repository.AccountCredentialRepository;
@@ -24,6 +26,7 @@ public class RegisterService implements RegisterUseCase {
     private final AuthMapper authMapper;
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
+    private final KeycloakClient keycloakClient;
 
     @Override
     @Transactional
@@ -46,7 +49,7 @@ public class RegisterService implements RegisterUseCase {
         CreateAccountRequest createAccountRequest = authMapper.toCreateAccountRequest(command);
         createAccountRequest.setUserId(saved.getId());
         userClient.createAccount(createAccountRequest);
-
+        keycloakClient.createUser(new CreateKeycloakUserCommand(command.username(), command.password(), command.email()));
 
     }
 
