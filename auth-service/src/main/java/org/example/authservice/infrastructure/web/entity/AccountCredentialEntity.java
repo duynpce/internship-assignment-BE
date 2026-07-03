@@ -31,6 +31,9 @@ public class AccountCredentialEntity {
     @Column(name = "id", updatable = false, nullable = false)
     private UUID id;
 
+    @Column(name = "keycloak_id", unique = true)
+    private UUID keycloakId;
+
     @Column(name = "username", nullable = false, unique = true)
     private String username;
 
