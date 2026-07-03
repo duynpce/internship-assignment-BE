@@ -91,9 +91,9 @@ public class LocalAuthController {
         return  "Hello World";
     }
 
-    @GetMapping("/test-auth")
-    public ResponseEntity<ResponseDto<String>> testAuth() {
-        return ResponseEntity.ok(ResponseDto.success("test auth"));
+    @GetMapping("/me")
+    public ResponseEntity<ResponseDto<Boolean>> getMe() {
+        return ResponseEntity.ok(ResponseDto.success(true));
     }
 
     private ResponseCookie buildRefreshCookie(String refreshToken) {
