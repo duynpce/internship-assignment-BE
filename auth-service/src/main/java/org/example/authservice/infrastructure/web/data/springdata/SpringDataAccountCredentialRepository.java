@@ -11,6 +11,10 @@ import java.util.UUID;
 public interface SpringDataAccountCredentialRepository extends JpaRepository<AccountCredentialEntity, UUID> {
     @EntityGraph(attributePaths = {"roles", "roles.permissions"})
     Optional<AccountCredentialEntity> findWithRolesById(UUID id);
+    @EntityGraph(attributePaths = {"roles", "roles.permissions"})
+    Optional<AccountCredentialEntity> findWithRolesByKeycloakId(UUID keycloakId);
+    @EntityGraph(attributePaths = {"roles", "roles.permissions"})
+    Optional<AccountCredentialEntity> findByUsername(String username);
 
     boolean existsByUsername(String username);
     boolean existsByEmail(String email);

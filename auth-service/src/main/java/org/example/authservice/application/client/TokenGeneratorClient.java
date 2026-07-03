@@ -22,10 +22,7 @@ public interface TokenGeneratorClient {
     Set<String> extractRolesFromRefreshToken(String refreshToken);
     Set<String> extractPermissionsFromRefreshToken(String refreshToken);
 
-    UUID extractUserIdFromLocalKeycloakAccessToken(String keycloakAccessToken);
-    UUID extractUserIdFromRemoteKeycloakAccessToken(String keycloakAccessToken);
-    String extractUsernameFromLocalKeycloakAccessToken(String keycloakAccessToken);
-    String extractUsernameFromRemoteKeycloakAccessToken(String keycloakAccessToken);
-    String extractEmailFromRemoteKeycloakAccessToken(String keycloakAccessToken);
+    UUID extractUserIdFromKeycloakAccessToken(String keycloakAccessToken);
+    String extractUsernameFromKeycloakAccessToken(String keycloakAccessToken);
 
 }

@@ -15,7 +15,7 @@ public class Account {
     private PhoneNumber phoneNumber;
     private String address;
     private Gender gender;
-    private Instant createdAt =  Instant.now();
+    private Instant createdAt;
     private Instant updatedAt;
 
     public Account(String firstName, String lastName) {
@@ -45,6 +45,9 @@ public class Account {
 
     public Instant getCreatedAt() {
         return createdAt;
+    }
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
     }
 
     public Instant getUpdatedAt() {

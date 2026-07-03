@@ -5,5 +5,4 @@ import org.example.authservice.application.command.CallbackCommand;
 
 public interface CallbackUseCase {
     AuthTokenCommand remoteCallback(CallbackCommand command);
-    AuthTokenCommand localCallback(CallbackCommand command);
 }

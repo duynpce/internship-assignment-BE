@@ -2,8 +2,7 @@ package org.example.authservice.application.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.authservice.application.client.KeycloakLocalClient;
-import org.example.authservice.application.client.KeycloakRemoteClient;
+import org.example.authservice.application.client.KeycloakClient;
 import org.example.authservice.application.client.TokenGeneratorClient;
 import org.example.authservice.application.repository.AuthTokenRepository;
 import org.example.authservice.application.usecase.LogoutUseCase;
@@ -19,8 +18,7 @@ import java.util.UUID;
 @Slf4j
 public class LogoutService implements LogoutUseCase {
 
-    private final KeycloakRemoteClient keycloakRemoteClient;
-    private final KeycloakLocalClient keycloakLocalClient;
+    private final KeycloakClient keycloakClient;
     private final AuthTokenRepository authTokenRepository;
     private final TokenGeneratorClient tokenGeneratorClient;
 
@@ -28,7 +26,7 @@ public class LogoutService implements LogoutUseCase {
     @Transactional
     public void remoteLogout(String authRefreshToken) {
         AuthToken storedToken = validateAndLoad(authRefreshToken);
-        keycloakRemoteClient.logout(storedToken.getKeycloakRefreshToken());
+        keycloakClient.logout(storedToken.getKeycloakRefreshToken());
         authTokenRepository.deleteByAuthRefreshToken(storedToken.getAuthRefreshToken());
         log.info("Remote logout successful for userId: {}", storedToken.getUserId());
     }
@@ -37,7 +35,6 @@ public class LogoutService implements LogoutUseCase {
     @Transactional
     public void localLogout(String authRefreshToken) {
         AuthToken storedToken = validateAndLoad(authRefreshToken);
-        keycloakLocalClient.logout(storedToken.getKeycloakRefreshToken());
         authTokenRepository.deleteByAuthRefreshToken(storedToken.getAuthRefreshToken());
         log.info("Local logout successful for userId: {}", storedToken.getUserId());
     }

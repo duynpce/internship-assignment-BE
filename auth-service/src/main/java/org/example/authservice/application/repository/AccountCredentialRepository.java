@@ -8,8 +8,10 @@ public interface AccountCredentialRepository {
     AccountCredential save(AccountCredential domain);
 
     AccountCredential findById(UUID id);
-
     AccountCredential findByIdWithRolesAndPermissions(UUID id);
+    AccountCredential findByKeycloakIdWithRolesAndPermissions(UUID keycloakId);
+    AccountCredential findByUsername(String username);
+
 
     boolean existsByUsername(String username);
     boolean existsByEmail(String email);

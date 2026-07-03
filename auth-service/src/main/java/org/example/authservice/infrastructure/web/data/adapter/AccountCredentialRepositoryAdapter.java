@@ -42,6 +42,20 @@ public class AccountCredentialRepositoryAdapter implements AccountCredentialRepo
     }
 
     @Override
+    public AccountCredential findByKeycloakIdWithRolesAndPermissions(UUID keycloakId) {
+        return springDataRepo.findWithRolesByKeycloakId(keycloakId)
+                .map(mapper::toDomain)
+                .orElseThrow(() -> new NotFoundException("Account credential not found for keycloakId: " + keycloakId));
+    }
+
+    @Override
+    public AccountCredential findByUsername(String username) {
+        return springDataRepo.findByUsername(username)
+                .map(mapper::toDomain)
+                .orElseThrow(() -> new NotFoundException("Account credential not found for username: " + username));
+    }
+
+    @Override
     public boolean existsByUsername(String username) {
         return springDataRepo.existsByUsername(username);
     }

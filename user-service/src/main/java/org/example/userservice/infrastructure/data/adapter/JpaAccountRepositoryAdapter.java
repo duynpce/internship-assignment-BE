@@ -55,8 +55,7 @@ public class JpaAccountRepositoryAdapter implements AccountRepository {
                 .map(accountMapper::toDomain)
                 .toList();
 
-        // This is the only place in the codebase that converts Spring Data's Page
-        // into the framework-agnostic PageCommand used by the application layer.
+
         return PageCommand.of(
                 accounts,
                 entityPage.getTotalElements(),

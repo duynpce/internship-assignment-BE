@@ -24,15 +24,13 @@ spring:
     baseline-on-migrate: true
 
 keycloak:
-  server-remote-url: ${KEYCLOAK_SERVER_REMOTE_URL:http://keycloak-remote:8080}
-  server-local-url: ${KEYCLOAK_SERVER_LOCAL_URL:http://keycloak-local:9090}
+  server-url: ${KEYCLOAK_SERVER_URL:http://keycloak:9090}
   realm: ${KEYCLOAK_REALM:user}
   client-id: ${KEYCLOAK_CLIENT_ID:shopping-client}
   client-secret: ${KEYCLOAK_CLIENT_SECRET}
   admin-username: ${KEYCLOAK_ADMIN_USERNAME:admin}
   admin-password: ${KEYCLOAK_ADMIN_PASSWORD:admin}
-  remote-redirect-uri: ${CLIENT_URI:http://localhost:4200}/callback/remote
-  local-redirect-uri: ${CLIENT_URI:http://localhost:4200}/callback/local
+  redirect-uri: ${KEYCLOAK_REDIRECT_URI:http://localhost:4200/callback/remote}
 
 jwt:
   access-secret: ${JWT_ACCESS_SECRET}

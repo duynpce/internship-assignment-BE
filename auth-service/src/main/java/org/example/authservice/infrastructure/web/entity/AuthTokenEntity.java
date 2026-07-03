@@ -22,7 +22,7 @@ public class AuthTokenEntity {
     @Column(name = "auth_refresh_token", nullable = false, length = 2048)
     private String authRefreshToken;
 
-    @Column(name = "keycloak_refresh_token", nullable = false, length = 2048)
+    @Column(name = "keycloak_refresh_token", length = 2048)
     private String keycloakRefreshToken;
 
     @Column(name = "session_expire_at", nullable = false)

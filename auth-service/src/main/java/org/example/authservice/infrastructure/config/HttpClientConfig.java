@@ -4,8 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.channel.ChannelOption;
 import org.example.authservice.domain.exception.ExternalServiceException;
-import org.example.authservice.infrastructure.keycloak.httpclient.KeycloakLocalHttpClient;
-import org.example.authservice.infrastructure.keycloak.httpclient.KeycloakRemoteHttpClient;
+import org.example.authservice.infrastructure.keycloak.httpclient.KeycloakHttpClient;
 import org.example.authservice.infrastructure.prop.AppProperties;
 import org.example.authservice.infrastructure.prop.KeycloakProperties;
 import org.example.authservice.infrastructure.user.httpclient.UserHttpClient;
@@ -31,13 +30,8 @@ public class HttpClientConfig {
     private static final Duration RESPONSE_TIMEOUT = Duration.ofSeconds(10);
 
     @Bean
-    public KeycloakRemoteHttpClient keycloakRemoteHttpClient(KeycloakProperties props) {
-        return createHttpClient(props.getServerRemoteUrl(), KeycloakRemoteHttpClient.class);
-    }
-
-    @Bean
-    public KeycloakLocalHttpClient keycloakLocalHttpClient(KeycloakProperties props) {
-        return createHttpClient(props.getServerLocalUrl(), KeycloakLocalHttpClient.class);
+    public KeycloakHttpClient keycloakHttpClient(KeycloakProperties props) {
+        return createHttpClient(props.getServerUrl(), KeycloakHttpClient.class);
     }
 
     @Bean

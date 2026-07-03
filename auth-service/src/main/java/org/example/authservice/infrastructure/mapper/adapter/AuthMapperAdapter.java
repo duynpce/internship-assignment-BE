@@ -7,7 +7,6 @@ import org.example.authservice.application.command.RegisterCommand;
 import org.example.authservice.application.mapper.AuthMapper;
 import org.example.authservice.domain.model.AccountCredential;
 import org.example.authservice.domain.model.AuthToken;
-import org.example.authservice.domain.model.RemoteAccountCredential;
 import org.example.authservice.domain.model.Role;
 import org.example.authservice.infrastructure.mapper.mapstruct.AuthMapperMapstruct;
 import org.example.authservice.infrastructure.web.dto.CreateAccountRequest;
@@ -15,7 +14,6 @@ import org.example.authservice.infrastructure.web.dto.RegisterRequest;
 import org.example.authservice.infrastructure.web.dto.TokenResponse;
 import org.example.authservice.infrastructure.web.entity.AccountCredentialEntity;
 import org.example.authservice.infrastructure.web.entity.AuthTokenEntity;
-import org.example.authservice.infrastructure.web.entity.RemoteAccountCredentialEntity;
 import org.example.authservice.infrastructure.web.entity.RoleEntity;
 import org.springframework.stereotype.Component;
 
@@ -67,14 +65,6 @@ public class AuthMapperAdapter implements AuthMapper {
     }
 
     @Override
-    public RemoteAccountCredentialEntity toEntity(RemoteAccountCredential domain) {
-        if (domain == null) {
-            return null;
-        }
-        return mapstructMapper.toEntity(domain);
-    }
-
-    @Override
     public AccountCredential toDomain(CreateCredentialAccountCommand domain) {
         if (domain == null) {
             return null;
@@ -114,11 +104,4 @@ public class AuthMapperAdapter implements AuthMapper {
         return mapstructMapper.toDomain(entity);
     }
 
-    @Override
-    public RemoteAccountCredential toRemoteDomain(RemoteAccountCredentialEntity entity) {
-        if (entity == null) {
-            return null;
-        }
-        return mapstructMapper.toRemoteDomain(entity);
-    }
 }

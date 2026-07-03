@@ -16,22 +16,9 @@ services:
       timeout: 5s
       retries: 5
 
-  keycloak-remote:
+  keycloak:
     image: 'keycloak/keycloak:26.6.2'
-    container_name: keycloak-remote
-    environment:
-      KC_HOSTNAME: "http://localhost:8080"
-      KC_BOOTSTRAP_ADMIN_USERNAME: admin
-      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
-      KC_HEALTH_ENABLED: "true"
-      KC_LOG_LEVEL: info
-    ports:
-      - '8080:8080'
-    command: start-dev
-
-  keycloak-local:
-    image: 'keycloak/keycloak:26.6.2'
-    container_name: keycloak-local
+    container_name: keycloak
     environment:
       KC_HOSTNAME: "http://localhost:9090"
       KC_HTTP_PORT: 9090
@@ -51,8 +38,7 @@ services:
     container_name: auth-service
     environment:
       - SPRING_PROFILES_ACTIVE=prod
-      - KEYCLOAK_SERVER_REMOTE_URL=http://keycloak-remote:8080
-      - KEYCLOAK_SERVER_LOCAL_URL=http://keycloak-local:9090
+      - KEYCLOAK_SERVER_URL=http://keycloak:9090
       - KEYCLOAK_REALM=user
       - KEYCLOAK_CLIENT_ID=shopping-client
       - KEYCLOAK_CLIENT_SECRET=change-me
@@ -64,6 +50,7 @@ services:
       - JWT_REFRESH_EXPIRATION_DAY=1
       - CLIENT_URI=http://localhost:4200
       - USER_SERVICE_URL=http://user-service:8081
+      - KEYCLOAK_REDIRECT_URI=http://localhost:4200/callback/remote
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/auth_db
       - SPRING_DATASOURCE_USERNAME=myuser
       - SPRING_DATASOURCE_PASSWORD=secret
@@ -72,9 +59,7 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      keycloak-remote:
-        condition: service_started
-      keycloak-local:
+      keycloak:
         condition: service_started
     develop:
       watch:

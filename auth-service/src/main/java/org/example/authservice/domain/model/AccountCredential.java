@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 
 public class AccountCredential {
     private UUID id ;
+    private UUID KeycloakId;
     private String username;
     private String password;
     private Set<Role> roles =  new HashSet<>();
@@ -31,6 +32,18 @@ public class AccountCredential {
 
     public void setId(UUID id) {
         this.id = id;
+    }
+
+    public UUID getKeycloakId() {
+        return KeycloakId;
+    }
+
+    public void setKeycloakId(UUID keycloakId) {
+        KeycloakId = keycloakId;
+    }
+
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
     }
 
     public String getUsername() {
