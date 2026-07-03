@@ -1,0 +1,138 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: 'postgres:18.1'
+    environment:
+      - 'POSTGRES_USER=myuser'
+      - 'POSTGRES_PASSWORD=secret'
+    volumes:
+      - './resource/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql'
+    ports:
+      - '5433:5432'
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U myuser" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  keycloak:
+    image: 'keycloak/keycloak:26.6.2'
+    container_name: keycloak
+    environment:
+      KC_HOSTNAME: "http://localhost:9090"
+      KC_HTTP_PORT: 9090
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_HEALTH_ENABLED: "true"
+      KC_LOG_LEVEL: info
+    ports:
+      - '9090:9090'
+    command: start-dev
+    volumes:
+      - './custom-keycloak/target-public/custom-keycloak.jar:/opt/keycloak/providers/my-custom-plugin.jar'
+      - './custom-keycloak/target-public/postgresql-42.7.11.jar:/opt/keycloak/providers/postgresql-42.7.11.jar'
+
+  auth-service:
+    build: ./auth-service
+    container_name: auth-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - KEYCLOAK_SERVER_URL=http://keycloak:9090
+      - KEYCLOAK_REALM=user
+      - KEYCLOAK_CLIENT_ID=shopping-client
+      - KEYCLOAK_CLIENT_SECRET=change-me
+      - KEYCLOAK_ADMIN_USERNAME=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+      - JWT_ACCESS_SECRET=bXktYWNjZXNzLXNlY3JldC1rZXktZm9yLXNob3BwaW5nLWFwcC0yNTY=
+      - JWT_REFRESH_SECRET=bXktcmVmcmVzaC1zZWNyZXQta2V5LWZvci1zaG9wcGluZy1hcHAtMjU2
+      - JWT_ACCESS_EXPIRATION_MINUTES=15
+      - JWT_REFRESH_EXPIRATION_DAY=1
+      - CLIENT_URI=http://localhost:4200
+      - USER_SERVICE_URL=http://user-service:8081
+      - KEYCLOAK_REDIRECT_URI=http://localhost:4200/callback/remote
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/auth_db
+      - SPRING_DATASOURCE_USERNAME=myuser
+      - SPRING_DATASOURCE_PASSWORD=secret
+    ports:
+      - "8084:8084"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
+    develop:
+      watch:
+        - action: rebuild
+          path: ./auth-service/src
+
+  user-service:
+    build: ./user-service
+    container_name: user-service
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/user_db
+      - SPRING_DATASOURCE_USERNAME=myuser
+      - SPRING_DATASOURCE_PASSWORD=secret
+    ports:
+      - "8081:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  report-service:
+    build: ./report-service
+    container_name: report-service
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/report_db
+      - SPRING_DATASOURCE_USERNAME=myuser
+      - SPRING_DATASOURCE_PASSWORD=secret
+      - USER_SERVICE_URL=http://user-service:8081
+    ports:
+      - "8082:8082"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    develop:
+      watch:
+        - action: rebuild
+          path: ./report-service/src
+
+  ticket-service:
+    build: ./ticket-service
+    container_name: ticket-service
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/ticket_db
+      - SPRING_DATASOURCE_USERNAME=myuser
+      - SPRING_DATASOURCE_PASSWORD=secret
+    ports:
+      - "8083:8083"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    develop:
+      watch:
+        - action: rebuild
+          path: ./ticket-service/src
+
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - JWT_ACCESS_SECRET=bXktYWNjZXNzLXNlY3JldC1rZXktZm9yLXNob3BwaW5nLWFwcC0yNTY=
+      - CLIENT_URI=http://localhost:4200
+      - AUTH_SERVICE_URL=http://auth-service:8084
+      - USER_SERVICE_URL=http://user-service:8081
+      - REPORT_SERVICE_URL=http://report-service:8082
+      - TICKET_SERVICE_URL=http://ticket-service:8083
+    ports:
+      - "8000:8000"
+    depends_on:
+      - auth-service
+      - user-service
+      - report-service
+      - ticket-service
+    develop:
+      watch:
+        - action: rebuild
+          path: ./api-gateway/src
