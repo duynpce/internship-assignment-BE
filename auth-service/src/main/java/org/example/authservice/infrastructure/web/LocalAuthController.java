@@ -41,7 +41,7 @@ public class LocalAuthController {
 
         TokenResponse tokenResponse = authMapper.toDto(authTokenCommand);
 
-
+        response.addHeader(HttpHeaders.SET_COOKIE, buildAccessCookie(authTokenCommand.accessToken()).toString());
         response.addHeader(HttpHeaders.SET_COOKIE, buildRefreshCookie(authTokenCommand.refreshToken()).toString());
         return ResponseEntity.ok(ResponseDto.success(tokenResponse));
     }
@@ -60,6 +60,7 @@ public class LocalAuthController {
 
         AuthTokenCommand token = refreshTokenUseCase.localRefresh(refreshToken);
         TokenResponse tokenDto = authMapper.toDto(token);
+        response.addHeader(HttpHeaders.SET_COOKIE, buildAccessCookie(token.accessToken()).toString());
         response.addHeader(HttpHeaders.SET_COOKIE, buildRefreshCookie(token.refreshToken()).toString());
         return ResponseEntity.ok(ResponseDto.success(tokenDto));
     }
@@ -70,6 +71,7 @@ public class LocalAuthController {
             HttpServletResponse response) {
 
         logoutUseCase.localLogout(refreshToken);
+        response.addHeader(HttpHeaders.SET_COOKIE, clearAccessCookie().toString());
         response.addHeader(HttpHeaders.SET_COOKIE, clearRefreshCookie().toString());
         return ResponseEntity.ok(ResponseDto.success(null));
     }
@@ -96,12 +98,32 @@ public class LocalAuthController {
         return ResponseEntity.ok(ResponseDto.success(true));
     }
 
+    private ResponseCookie buildAccessCookie(String accessToken) {
+        return ResponseCookie.from("accessToken", accessToken)
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(Duration.ofMinutes(15))
+                .sameSite(Cookie.SameSite.STRICT.toString())
+                .build();
+    }
+
     private ResponseCookie buildRefreshCookie(String refreshToken) {
         return ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)
                 .secure(true)
                 .path("/")
                 .maxAge(Duration.ofDays(1))
+                .sameSite(Cookie.SameSite.STRICT.toString())
+                .build();
+    }
+
+    private ResponseCookie clearAccessCookie() {
+        return ResponseCookie.from("accessToken", "")
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(0)
                 .sameSite(Cookie.SameSite.STRICT.toString())
                 .build();
     }
