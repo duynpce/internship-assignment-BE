@@ -1,111 +1,117 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<jasperReport name="account_report"
-              pageWidth="842" pageHeight="595" orientation="Landscape"
-              columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20"
-              whenNoDataType="AllSectionsNoDetail">
-
-    <parameter name="ReportTitle" class="java.lang.String"/>
-
-    <field name="id" class="java.util.UUID"/>
-    <field name="firstName" class="java.lang.String"/>
-    <field name="lastName" class="java.lang.String"/>
-    <field name="phoneNumber" class="java.lang.String"/>
-    <field name="address" class="java.lang.String"/>
-    <field name="gender" class="org.example.reportservice.domain.constant.Gender"/>
-    <field name="createdAt" class="java.time.Instant"/>
-    <field name="updatedAt" class="java.time.Instant"/>
-
-    <title height="50">
-        <element kind="textField" x="0" y="0" width="802" height="30"
-                 hTextAlign="Center" vTextAlign="Middle" fontSize="18.0" bold="true">
-            <expression><![CDATA[$P{ReportTitle} == null ? "User Account Report" : $P{ReportTitle}]]></expression>
-        </element>
-        <element kind="textField" x="0" y="30" width="802" height="14"
-                 hTextAlign="Center" fontSize="9.0" italic="true" pattern="yyyy-MM-dd HH:mm">
-            <expression><![CDATA["Generated on " + new java.util.Date()]]></expression>
-        </element>
-    </title>
-
-    <columnHeader height="22">
-        <element kind="staticText" x="0" y="0" width="110" height="22"
-                 mode="Opaque" backcolor="#3B5266" vTextAlign="Middle" bold="true" fontSize="9.0" pdfFontName="Helvetica-Bold">
-            <text><![CDATA[First Name]]></text>
-            <box><pen lineWidth="0.5" lineColor="#FFFFFF"/></box>
-            <paragraph leftIndent="4"/>
-        </element>
-        <element kind="staticText" x="110" y="0" width="110" height="22"
-                 mode="Opaque" backcolor="#3B5266" vTextAlign="Middle" bold="true" fontSize="9.0">
-            <text><![CDATA[Last Name]]></text>
-            <box><pen lineWidth="0.5" lineColor="#FFFFFF"/></box>
-            <paragraph leftIndent="4"/>
-        </element>
-        <element kind="staticText" x="220" y="0" width="110" height="22"
-                 mode="Opaque" backcolor="#3B5266" vTextAlign="Middle" bold="true" fontSize="9.0">
-            <text><![CDATA[Phone Number]]></text>
-            <box><pen lineWidth="0.5" lineColor="#FFFFFF"/></box>
-            <paragraph leftIndent="4"/>
-        </element>
-        <element kind="staticText" x="330" y="0" width="220" height="22"
-                 mode="Opaque" backcolor="#3B5266" vTextAlign="Middle" bold="true" fontSize="9.0">
-            <text><![CDATA[Address]]></text>
-            <box><pen lineWidth="0.5" lineColor="#FFFFFF"/></box>
-            <paragraph leftIndent="4"/>
-        </element>
-        <element kind="staticText" x="550" y="0" width="90" height="22"
-                 mode="Opaque" backcolor="#3B5266" vTextAlign="Middle" bold="true" fontSize="9.0">
-            <text><![CDATA[Gender]]></text>
-            <box><pen lineWidth="0.5" lineColor="#FFFFFF"/></box>
-            <paragraph leftIndent="4"/>
-        </element>
-        <element kind="staticText" x="640" y="0" width="162" height="22"
-                 mode="Opaque" backcolor="#3B5266" vTextAlign="Middle" bold="true" fontSize="9.0">
-            <text><![CDATA[Created At]]></text>
-            <box><pen lineWidth="0.5" lineColor="#FFFFFF"/></box>
-            <paragraph leftIndent="4"/>
-        </element>
-    </columnHeader>
-
-    <detail>
-        <band height="18" splitType="Stretch">
-            <element kind="textField" x="0" y="0" width="110" height="18" vTextAlign="Middle" fontSize="8.0">
-                <expression><![CDATA[$F{firstName} == null ? "" : $F{firstName}]]></expression>
-                <box bottomPadding="2"><pen lineWidth="0.25" lineColor="#CCCCCC"/></box>
-                <paragraph leftIndent="4"/>
-                <property name="net.sf.jasperreports.export.xls.cell.background.row.color" value="#F4F6F7"/>
-            </element>
-            <element kind="textField" x="110" y="0" width="110" height="18" vTextAlign="Middle" fontSize="8.0">
-                <expression><![CDATA[$F{lastName} == null ? "" : $F{lastName}]]></expression>
-                <box bottomPadding="2"><pen lineWidth="0.25" lineColor="#CCCCCC"/></box>
-                <paragraph leftIndent="4"/>
-            </element>
-            <element kind="textField" x="220" y="0" width="110" height="18" vTextAlign="Middle" fontSize="8.0">
-                <expression><![CDATA[$F{phoneNumber} == null ? "" : $F{phoneNumber}]]></expression>
-                <box bottomPadding="2"><pen lineWidth="0.25" lineColor="#CCCCCC"/></box>
-                <paragraph leftIndent="4"/>
-            </element>
-            <element kind="textField" x="330" y="0" width="220" height="18" vTextAlign="Middle" fontSize="8.0">
-                <expression><![CDATA[$F{address} == null ? "" : $F{address}]]></expression>
-                <box bottomPadding="2"><pen lineWidth="0.25" lineColor="#CCCCCC"/></box>
-                <paragraph leftIndent="4"/>
-            </element>
-            <element kind="textField" x="550" y="0" width="90" height="18" vTextAlign="Middle" fontSize="8.0">
-                <expression><![CDATA[$F{gender} == null ? "" : $F{gender}.name()]]></expression>
-                <box bottomPadding="2"><pen lineWidth="0.25" lineColor="#CCCCCC"/></box>
-                <paragraph leftIndent="4"/>
-            </element>
-            <element kind="textField" x="640" y="0" width="162" height="18" vTextAlign="Middle" fontSize="8.0">
-                <expression><![CDATA[$F{createdAt} == null ? "" : $F{createdAt}.atZone(java.time.ZoneOffset.UTC).format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))]]></expression>
-                <box bottomPadding="2"><pen lineWidth="0.25" lineColor="#CCCCCC"/></box>
-                <paragraph leftIndent="4"/>
-            </element>
-        </band>
-    </detail>
-
-    <noData height="40">
-        <element kind="staticText" x="0" y="0" width="802" height="30"
-                 hTextAlign="Center" vTextAlign="Middle" fontSize="11.0" italic="true">
-            <text><![CDATA[No accounts matched the given filter.]]></text>
-        </element>
-    </noData>
-
+<!-- Created with Jaspersoft Studio version 7.0.6.final using JasperReports Library version 7.0.6-5d2a603fdc6b3db8f842a83383e594f41891534d  -->
+<jasperReport name="account_report" language="java" pageWidth="842" pageHeight="595" orientation="Landscape" whenNoDataType="AllSectionsNoDetail" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="1a1ca077-be5d-41f8-a334-e7dad8fc71d8">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
+	<parameter name="ReportTitle" class="java.lang.String"/>
+	<field name="id" class="java.util.UUID"/>
+	<field name="firstName" class="java.lang.String"/>
+	<field name="lastName" class="java.lang.String"/>
+	<field name="phoneNumber" class="java.lang.String"/>
+	<field name="address" class="java.lang.String"/>
+	<field name="gender" class="org.example.reportservice.domain.constant.Gender"/>
+	<field name="createdAt" class="java.time.Instant"/>
+	<field name="updatedAt" class="java.time.Instant"/>
+	<title height="50">
+		<element kind="textField" uuid="60b994a9-5440-4bd1-8100-485548df21c0" x="0" y="0" width="802" height="30" fontSize="18.0" bold="true" hTextAlign="Center" vTextAlign="Middle">
+			<expression><![CDATA[$P{ReportTitle} == null ? "User Account Report" : $P{ReportTitle}]]></expression>
+		</element>
+		<element kind="textField" uuid="c300897c-5d99-4f03-ab70-544c902db2d6" x="0" y="30" width="802" height="14" fontSize="9.0" pattern="yyyy-MM-dd HH:mm" italic="true" hTextAlign="Center">
+			<expression><![CDATA["Generated on " + new java.util.Date()]]></expression>
+		</element>
+	</title>
+	<columnHeader height="22">
+		<element kind="staticText" uuid="f2db8575-4b17-4a13-ac51-144ce429af24" mode="Opaque" x="0" y="0" width="110" height="22" backcolor="#3B5266" fontSize="9.0" pdfFontName="Helvetica-Bold" bold="true" vTextAlign="Middle">
+			<paragraph leftIndent="4"/>
+			<text><![CDATA[First Name]]></text>
+			<box>
+				<pen lineWidth="0.5" lineColor="#FFFFFF"/>
+			</box>
+		</element>
+		<element kind="staticText" uuid="6b7cbc92-2f3c-43ad-b90b-3ef6c7d0169f" mode="Opaque" x="110" y="0" width="110" height="22" backcolor="#3B5266" fontSize="9.0" bold="true" vTextAlign="Middle">
+			<paragraph leftIndent="4"/>
+			<text><![CDATA[Last Name]]></text>
+			<box>
+				<pen lineWidth="0.5" lineColor="#FFFFFF"/>
+			</box>
+		</element>
+		<element kind="staticText" uuid="a8a66310-6f5b-46d1-b6bd-e3a427741f68" mode="Opaque" x="220" y="0" width="110" height="22" backcolor="#3B5266" fontSize="9.0" bold="true" vTextAlign="Middle">
+			<paragraph leftIndent="4"/>
+			<text><![CDATA[Phone Number]]></text>
+			<box>
+				<pen lineWidth="0.5" lineColor="#FFFFFF"/>
+			</box>
+		</element>
+		<element kind="staticText" uuid="0b0aae12-d8aa-4647-b126-a1c9d2f60ecd" mode="Opaque" x="330" y="0" width="220" height="22" backcolor="#3B5266" fontSize="9.0" bold="true" vTextAlign="Middle">
+			<paragraph leftIndent="4"/>
+			<text><![CDATA[Address]]></text>
+			<box>
+				<pen lineWidth="0.5" lineColor="#FFFFFF"/>
+			</box>
+		</element>
+		<element kind="staticText" uuid="89e08a2c-0e15-415c-b73c-955b2d6b1c05" mode="Opaque" x="550" y="0" width="90" height="22" backcolor="#3B5266" fontSize="9.0" bold="true" vTextAlign="Middle">
+			<paragraph leftIndent="4"/>
+			<text><![CDATA[Gender]]></text>
+			<box>
+				<pen lineWidth="0.5" lineColor="#FFFFFF"/>
+			</box>
+		</element>
+		<element kind="staticText" uuid="7cf690ac-f549-4130-bd96-a6a261790e37" mode="Opaque" x="640" y="0" width="162" height="22" backcolor="#3B5266" fontSize="9.0" bold="true" vTextAlign="Middle">
+			<paragraph leftIndent="4"/>
+			<text><![CDATA[Created At]]></text>
+			<box>
+				<pen lineWidth="0.5" lineColor="#FFFFFF"/>
+			</box>
+		</element>
+	</columnHeader>
+	<detail>
+		<band height="18" splitType="Stretch">
+			<element kind="textField" uuid="c72cfa84-fb69-40e9-af87-a70058926dff" x="0" y="0" width="110" height="18" fontSize="8.0" vTextAlign="Middle">
+				<paragraph leftIndent="4"/>
+				<expression><![CDATA[$F{gender}]]></expression>
+				<property name="net.sf.jasperreports.export.xls.cell.background.row.color" value="#F4F6F7"/>
+				<box bottomPadding="2">
+					<pen lineWidth="0.25" lineColor="#CCCCCC"/>
+				</box>
+			</element>
+			<element kind="textField" uuid="07cda43a-9806-4302-a85a-3edd510be342" x="110" y="0" width="110" height="18" fontSize="8.0" vTextAlign="Middle">
+				<paragraph leftIndent="4"/>
+				<expression><![CDATA[$F{lastName} == null ? "" : $F{lastName}]]></expression>
+				<box bottomPadding="2">
+					<pen lineWidth="0.25" lineColor="#CCCCCC"/>
+				</box>
+			</element>
+			<element kind="textField" uuid="fdb51ec7-f821-4906-a34c-334d50de16f2" x="220" y="0" width="110" height="18" fontSize="8.0" vTextAlign="Middle">
+				<paragraph leftIndent="4"/>
+				<expression><![CDATA[$F{phoneNumber} == null ? "" : $F{phoneNumber}]]></expression>
+				<box bottomPadding="2">
+					<pen lineWidth="0.25" lineColor="#CCCCCC"/>
+				</box>
+			</element>
+			<element kind="textField" uuid="5c27abe7-afc2-4247-ada0-4b673f0b8282" x="330" y="0" width="220" height="18" fontSize="8.0" vTextAlign="Middle">
+				<paragraph leftIndent="4"/>
+				<expression><![CDATA[$F{address} == null ? "" : $F{address}]]></expression>
+				<box bottomPadding="2">
+					<pen lineWidth="0.25" lineColor="#CCCCCC"/>
+				</box>
+			</element>
+			<element kind="textField" uuid="aae3d71f-2e55-4c4b-8d79-aded4c27a06b" x="550" y="0" width="90" height="18" fontSize="8.0" vTextAlign="Middle">
+				<paragraph leftIndent="4"/>
+				<expression><![CDATA[$F{gender} == null ? "" : $F{gender}.name()]]></expression>
+				<box bottomPadding="2">
+					<pen lineWidth="0.25" lineColor="#CCCCCC"/>
+				</box>
+			</element>
+			<element kind="textField" uuid="a8ceecd6-d6f8-4654-a292-5f5a79ebf3ad" x="640" y="0" width="162" height="18" fontSize="8.0" vTextAlign="Middle">
+				<paragraph leftIndent="4"/>
+				<expression><![CDATA[$F{createdAt} == null ? "" : $F{createdAt}.atZone(java.time.ZoneOffset.UTC).format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))]]></expression>
+				<box bottomPadding="2">
+					<pen lineWidth="0.25" lineColor="#CCCCCC"/>
+				</box>
+			</element>
+		</band>
+	</detail>
+	<noData height="40">
+		<element kind="staticText" uuid="ef5278dc-5582-4570-9936-f8bafcfc382c" x="0" y="0" width="802" height="30" fontSize="11.0" italic="true" hTextAlign="Center" vTextAlign="Middle">
+			<text><![CDATA[No accounts matched the given filter.]]></text>
+		</element>
+	</noData>
 </jasperReport>
