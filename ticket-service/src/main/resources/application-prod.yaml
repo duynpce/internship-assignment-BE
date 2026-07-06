@@ -22,7 +22,13 @@ spring:
     locations: classpath:db/migration
     baseline-on-migrate: true
 
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          secret: ${JWT_ACCESS_SECRET}
+
 server:
-  port: 8082
+  port: 8083
   servlet:
     context-path: /api/v1/tickets

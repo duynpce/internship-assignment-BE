@@ -1,4 +1,4 @@
-  spring:
+spring:
   application:
     name: user-service
 
@@ -21,6 +21,12 @@
     enabled: true
     locations: classpath:db/migration
     baseline-on-migrate: true
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          secret: ${JWT_ACCESS_SECRET}
 
 server:
   port: 8081

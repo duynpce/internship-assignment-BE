@@ -50,7 +50,7 @@ services:
       - JWT_REFRESH_EXPIRATION_DAY=1
       - CLIENT_URI=http://localhost:4200
       - USER_SERVICE_URL=http://user-service:8081
-      - KEYCLOAK_REDIRECT_URI=http://localhost:4200/callback/remote
+      - KEYCLOAK_REDIRECT_URI=http://localhost:8084/api/v1/auth/remote/callback
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/auth_db
       - SPRING_DATASOURCE_USERNAME=myuser
       - SPRING_DATASOURCE_PASSWORD=secret
@@ -70,9 +70,11 @@ services:
     build: ./user-service
     container_name: user-service
     environment:
+      - SPRING_PROFILES_ACTIVE=prod
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/user_db
       - SPRING_DATASOURCE_USERNAME=myuser
       - SPRING_DATASOURCE_PASSWORD=secret
+      - JWT_ACCESS_SECRET=bXktYWNjZXNzLXNlY3JldC1rZXktZm9yLXNob3BwaW5nLWFwcC0yNTY=
     ports:
       - "8081:8081"
     depends_on:
@@ -83,10 +85,12 @@ services:
     build: ./report-service
     container_name: report-service
     environment:
+      - SPRING_PROFILES_ACTIVE=prod
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/report_db
       - SPRING_DATASOURCE_USERNAME=myuser
       - SPRING_DATASOURCE_PASSWORD=secret
       - USER_SERVICE_URL=http://user-service:8081
+      - JWT_ACCESS_SECRET=bXktYWNjZXNzLXNlY3JldC1rZXktZm9yLXNob3BwaW5nLWFwcC0yNTY=
     ports:
       - "8082:8082"
     depends_on:
@@ -101,9 +105,11 @@ services:
     build: ./ticket-service
     container_name: ticket-service
     environment:
+      - SPRING_PROFILES_ACTIVE=prod
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/ticket_db
       - SPRING_DATASOURCE_USERNAME=myuser
       - SPRING_DATASOURCE_PASSWORD=secret
+      - JWT_ACCESS_SECRET=bXktYWNjZXNzLXNlY3JldC1rZXktZm9yLXNob3BwaW5nLWFwcC0yNTY=
     ports:
       - "8083:8083"
     depends_on:

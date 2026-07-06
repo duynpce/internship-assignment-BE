@@ -1,4 +1,4 @@
-package org.example.userservice.infrastructure.config;
+package org.example.ticketservice.infrastructure.config;
 
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -64,7 +64,7 @@ public class SecurityConfig {
             }
 
             // Map 'permissions' claim → direct authority
-            // Format produced by auth-service: RESOURCE:ACTION  (e.g. USER:READ)
+            // Format produced by auth-service: RESOURCE:ACTION  (e.g. PROMOTE:READ_ALL)
             List<String> permissions = jwt.getClaimAsStringList("permissions");
             if (permissions != null) {
                 permissions.stream()
