@@ -31,24 +31,13 @@ public class LoginService implements LoginUseCase{
             throw new UnauthorizedException("invalid username or password");
         }
 
-        Set<String> roles = extractRoleNames(accountCredential.getRoles());
-        Set<String> permissions = extractPermissions(accountCredential.getRoles());
+        Set<String> roles = accountCredential.extractRoleNames();
+        Set<String> permissions = accountCredential.extractPermissions();
 
 
         return tokenGeneratorClient.generate( accountCredential.getUsername(),accountCredential.getId(),roles, permissions);
     }
 
-    private Set<String> extractRoleNames(Set<Role> roles) {
-        return roles.stream()
-                .map(Role::getName)
-                .collect(Collectors.toSet());
-    }
 
-    private Set<String> extractPermissions(Set<Role> roles) {
-        return roles.stream()
-                .flatMap(role -> role.getPermissions().stream())
-                .map(Permission::toAuthority)
-                .collect(Collectors.toSet());
-    }
 
 }
