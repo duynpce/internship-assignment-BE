@@ -15,6 +15,7 @@ import org.example.userservice.infrastructure.web.dto.MetaDto;
 import org.example.userservice.infrastructure.web.dto.ResponseDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -44,6 +45,7 @@ public class AccountController {
      * Example: GET /accounts/report?firstName=an&gender=FEMALE&createdFrom=2026-06-01&createdTo=2026-06-30&page=0&limit=20
      */
     @GetMapping("/report")
+    @PreAuthorize("hasAuthority('EXPORT:READ_ALL')")
     public ResponseEntity<ResponseDto<List<AccountReportResponsive>>> getAccountReport(
             @Valid @ModelAttribute AccountReportFilter filter) {
 
