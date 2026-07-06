@@ -1,5 +1,3 @@
-
-
 package org.example.apigateway.infrastructure.config;
 
 import io.jsonwebtoken.io.Decoders;
@@ -18,12 +16,16 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.NimbusReactiveJwtDecoder;
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
+import org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthenticationToken;
+import org.springframework.security.oauth2.server.resource.web.server.authentication.ServerBearerTokenAuthenticationConverter;
+import org.springframework.security.web.server.authentication.ServerAuthenticationConverter;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.ServerAuthenticationEntryPoint;
 import org.springframework.security.web.server.authorization.ServerAccessDeniedHandler;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.CorsConfigurationSource;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
+import org.springframework.http.HttpCookie;
 import reactor.core.publisher.Mono;
 
 import javax.crypto.SecretKey;
@@ -53,6 +55,7 @@ public class SecurityConfig {
                         .accessDeniedHandler(accessDeniedHandler())
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
+                        .bearerTokenConverter(bearerTokenResolver())
                         .jwt(jwt -> jwt.jwtDecoder(jwtDecoder()))
                         .authenticationEntryPoint(resourceServerAuthenticationEntryPoint())
                 )
@@ -105,6 +108,21 @@ public class SecurityConfig {
             return exchange.getResponse().setComplete();
         };
     }
+    @Bean
+    public ServerAuthenticationConverter bearerTokenResolver() {
+        ServerBearerTokenAuthenticationConverter headerConverter =
+                new ServerBearerTokenAuthenticationConverter();
+        return exchange -> {
+            // 1. Try cookie first
+            HttpCookie cookie = exchange.getRequest().getCookies().getFirst("accessToken");
+            if (cookie != null && !cookie.getValue().isBlank()) {
+                return Mono.just(new BearerTokenAuthenticationToken(cookie.getValue()));
+            }
+            // 2. Fallback to Authorization: Bearer <token> header
+            return headerConverter.convert(exchange);
+        };
+    }
+
 
     @Bean
     public ReactiveJwtDecoder jwtDecoder() {
