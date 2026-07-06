@@ -197,7 +197,9 @@ public class    JwtTokenAdapter implements TokenGeneratorClient {
         if (values == null || values.isEmpty()) {
             return Collections.emptyList();
         }
+
         List<String> result = new ArrayList<>();
+
         for (String value : values) {
             if (value != null && !value.isBlank()) {
                 result.add(value);

@@ -3,7 +3,9 @@ package org.example.authservice.domain.model;
 import org.example.authservice.domain.constant.Action;
 import org.example.authservice.domain.constant.Resource;
 
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class Permission {
     private UUID id;
@@ -42,6 +44,9 @@ public class Permission {
     public void setAction(Action action) {
         this.action = action;
     }
+
+
+
 
     public String toAuthority() {
         if (resource == null || action == null) {

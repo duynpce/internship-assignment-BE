@@ -4,10 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.example.authservice.domain.constant.Action;
 import org.example.authservice.domain.constant.Resource;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
-import java.time.Instant;
 import java.util.UUID;
 
 @Entity
