@@ -16,9 +16,11 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/remote")
@@ -39,19 +41,26 @@ public class RemoteAuthController {
         AuthTokenCommand token = callbackUseCase.remoteCallback(new CallbackCommand(request.code()));
         response.addHeader(HttpHeaders.SET_COOKIE, buildAccessCookie(token.accessToken()).toString());
         response.addHeader(HttpHeaders.SET_COOKIE, buildRefreshCookie(token.refreshToken()).toString());
-        response.sendRedirect(appProperties.getClientUri() + "/callback/remote");
 
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder
+                .fromUriString(appProperties.getClientUri() + "/callback/remote");
+
+        for (String role : token.roles()) {
+            uriBuilder.queryParam("role", role);
+        }
+
+        response.sendRedirect(uriBuilder.build().toUriString());
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<ResponseDto<Void>> refresh(
+    public ResponseEntity<ResponseDto<Set<String>>> refresh(
             @CookieValue(required = false) String refreshToken,
             HttpServletResponse response) {
 
         AuthTokenCommand token = refreshTokenUseCase.remoteRefresh(refreshToken);
         response.addHeader(HttpHeaders.SET_COOKIE, buildAccessCookie(token.accessToken()).toString());
         response.addHeader(HttpHeaders.SET_COOKIE, buildRefreshCookie(token.refreshToken()).toString());
-        return ResponseEntity.ok(ResponseDto.success(null));
+        return ResponseEntity.ok(ResponseDto.success(token.roles()));
     }
 
     @PostMapping("/logout")
@@ -63,6 +72,11 @@ public class RemoteAuthController {
         response.addHeader(HttpHeaders.SET_COOKIE, clearAccessCookie().toString());
         response.addHeader(HttpHeaders.SET_COOKIE, clearRefreshCookie().toString());
         return ResponseEntity.ok(ResponseDto.success(null));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<ResponseDto<Boolean>> getMe() {
+        return ResponseEntity.ok(ResponseDto.success(true));
     }
 
     private ResponseCookie buildAccessCookie(String accessToken) {
