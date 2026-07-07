@@ -46,7 +46,15 @@ public class SecurityConfig {
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeExchange(auth -> auth
-                        .pathMatchers("/local/test-auth", "/api/v1/reports/**").authenticated()
+                        .pathMatchers(
+                                "/local/test-auth",
+                                 "/api/v1/reports/**",
+                                "/api/v1/auth/*/me",
+                                "/api/v1/users/accounts/report"
+                        )
+                        .authenticated()
+
+
                         .anyExchange().permitAll()
                 )
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
