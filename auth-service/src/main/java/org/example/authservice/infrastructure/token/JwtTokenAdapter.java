@@ -44,7 +44,7 @@ public class    JwtTokenAdapter implements TokenGeneratorClient {
     public AuthTokenCommand generate(String username, UUID userId, Set<String> roles, Set<String> permissions) {
         String accessToken  = generateAccessToken(username, userId, roles, permissions);
         String refreshToken = generateRefreshToken(username, userId, roles, permissions);
-        return new AuthTokenCommand(accessToken, refreshToken, "Bearer", getExpiresInSeconds());
+        return new AuthTokenCommand(accessToken, refreshToken, "Bearer", getExpiresInSeconds(), roles);
     }
 
     @Override
@@ -197,7 +197,9 @@ public class    JwtTokenAdapter implements TokenGeneratorClient {
         if (values == null || values.isEmpty()) {
             return Collections.emptyList();
         }
+
         List<String> result = new ArrayList<>();
+
         for (String value : values) {
             if (value != null && !value.isBlank()) {
                 result.add(value);

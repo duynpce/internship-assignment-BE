@@ -6,6 +6,8 @@ public enum Action {
     UPDATE,
     DELETE,
     MANAGE,
+    DOWNLOAD,
+    UPLOAD,
     BUY,
     SELL,
 }

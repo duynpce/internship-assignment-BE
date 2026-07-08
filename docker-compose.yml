@@ -1,4 +1,3 @@
-version: '3.8'
 
 services:
   postgres:
@@ -15,6 +14,14 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+        reservations:
+          cpus: "0.25"
+          memory: 256M
 
   keycloak:
     image: 'keycloak/keycloak:26.6.2'
@@ -32,6 +39,14 @@ services:
     volumes:
       - './custom-keycloak/target-public/custom-keycloak.jar:/opt/keycloak/providers/my-custom-plugin.jar'
       - './custom-keycloak/target-public/postgresql-42.7.11.jar:/opt/keycloak/providers/postgresql-42.7.11.jar'
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1G
+        reservations:
+          cpus: "0.25"
+          memory: 512M
 
   auth-service:
     build: ./auth-service
@@ -50,7 +65,7 @@ services:
       - JWT_REFRESH_EXPIRATION_DAY=1
       - CLIENT_URI=http://localhost:4200
       - USER_SERVICE_URL=http://user-service:8081
-      - KEYCLOAK_REDIRECT_URI=http://localhost:4200/callback/remote
+      - KEYCLOAK_REDIRECT_URI=http://localhost:8084/api/v1/auth/remote/callback
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/auth_db
       - SPRING_DATASOURCE_USERNAME=myuser
       - SPRING_DATASOURCE_PASSWORD=secret
@@ -65,28 +80,48 @@ services:
       watch:
         - action: rebuild
           path: ./auth-service/src
+    deploy:
+      resources:
+        limits:
+          cpus: "0.75"
+          memory: 512M
+        reservations:
+          cpus: "0.25"
+          memory: 256M
 
   user-service:
     build: ./user-service
     container_name: user-service
     environment:
+      - SPRING_PROFILES_ACTIVE=prod
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/user_db
       - SPRING_DATASOURCE_USERNAME=myuser
       - SPRING_DATASOURCE_PASSWORD=secret
+      - JWT_ACCESS_SECRET=bXktYWNjZXNzLXNlY3JldC1rZXktZm9yLXNob3BwaW5nLWFwcC0yNTY=
     ports:
       - "8081:8081"
     depends_on:
       postgres:
         condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: "0.75"
+          memory: 512M
+        reservations:
+          cpus: "0.25"
+          memory: 256M
 
   report-service:
     build: ./report-service
     container_name: report-service
     environment:
+      - SPRING_PROFILES_ACTIVE=prod
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/report_db
       - SPRING_DATASOURCE_USERNAME=myuser
       - SPRING_DATASOURCE_PASSWORD=secret
       - USER_SERVICE_URL=http://user-service:8081
+      - JWT_ACCESS_SECRET=bXktYWNjZXNzLXNlY3JldC1rZXktZm9yLXNob3BwaW5nLWFwcC0yNTY=
     ports:
       - "8082:8082"
     depends_on:
@@ -96,14 +131,24 @@ services:
       watch:
         - action: rebuild
           path: ./report-service/src
+    deploy:
+      resources:
+        limits:
+          cpus: "0.75"
+          memory: 512M
+        reservations:
+          cpus: "0.25"
+          memory: 256M
 
   ticket-service:
     build: ./ticket-service
     container_name: ticket-service
     environment:
+      - SPRING_PROFILES_ACTIVE=prod
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/ticket_db
       - SPRING_DATASOURCE_USERNAME=myuser
       - SPRING_DATASOURCE_PASSWORD=secret
+      - JWT_ACCESS_SECRET=bXktYWNjZXNzLXNlY3JldC1rZXktZm9yLXNob3BwaW5nLWFwcC0yNTY=
     ports:
       - "8083:8083"
     depends_on:
@@ -113,6 +158,14 @@ services:
       watch:
         - action: rebuild
           path: ./ticket-service/src
+    deploy:
+      resources:
+        limits:
+          cpus: "0.75"
+          memory: 512M
+        reservations:
+          cpus: "0.25"
+          memory: 256M
 
   api-gateway:
     build: ./api-gateway
@@ -136,3 +189,11 @@ services:
       watch:
         - action: rebuild
           path: ./api-gateway/src
+    deploy:
+      resources:
+        limits:
+          cpus: "0.75"
+          memory: 512M
+        reservations:
+          cpus: "0.25"
+          memory: 256M

@@ -53,26 +53,12 @@ public class CallbackService implements CallbackUseCase {
             accountCredentialRepository.save(accountCredential);
         }
 
-
-        Set<String> roles = extractRoleNames(accountCredential.getRoles());
-        Set<String> permissions = extractPermissions(accountCredential.getRoles());
+        Set<String> roles = accountCredential.extractRoleNames();
+        Set<String> permissions = accountCredential.extractPermissions();
 
         return buildAndSaveAuthToken(keycloakSession.username(), accountCredential.getId(), keycloakSession.refreshToken(), roles, permissions);
     }
 
-
-    private Set<String> extractRoleNames(Set<Role> roles) {
-        return roles.stream()
-                .map(Role::getName)
-                .collect(Collectors.toSet());
-    }
-
-    private Set<String> extractPermissions(Set<Role> roles) {
-        return roles.stream()
-                .flatMap(role -> role.getPermissions().stream())
-                .map(Permission::toAuthority)
-                .collect(Collectors.toSet());
-    }
 
     private AuthTokenCommand buildAndSaveAuthToken(String username, UUID userId,
                                                     String keycloakRefreshToken,

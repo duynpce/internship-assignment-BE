@@ -4,10 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.example.authservice.domain.constant.Action;
 import org.example.authservice.domain.constant.Resource;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.example.authservice.domain.constant.Scope;
 
-import java.time.Instant;
 import java.util.UUID;
 
 @Entity
@@ -38,9 +36,13 @@ public class PermissionEntity {
     @Enumerated(EnumType.STRING)
     private Action action;
 
+    @Column(name = "scope", nullable = false,length = 50)
+    @Enumerated(EnumType.STRING)
+    private Scope scope;
+
 
     public String toAuthority() {
-        return resource.name() + ":" + action.name();
+        return resource.name() + ":" + action.name() + "_" + scope.name();
     }
 
 

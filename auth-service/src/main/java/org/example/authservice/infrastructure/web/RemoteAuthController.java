@@ -5,20 +5,22 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.authservice.application.command.AuthTokenCommand;
 import org.example.authservice.application.command.CallbackCommand;
-import org.example.authservice.application.mapper.AuthMapper;
 import org.example.authservice.application.usecase.CallbackUseCase;
 import org.example.authservice.application.usecase.LogoutUseCase;
 import org.example.authservice.application.usecase.RefreshTokenUseCase;
+import org.example.authservice.infrastructure.prop.AppProperties;
 import org.example.authservice.infrastructure.web.dto.CallbackRequest;
 import org.example.authservice.infrastructure.web.dto.ResponseDto;
-import org.example.authservice.infrastructure.web.dto.TokenResponse;
 import org.springframework.boot.web.server.Cookie;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.IOException;
 import java.time.Duration;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/remote")
@@ -27,30 +29,38 @@ import java.time.Duration;
 public class RemoteAuthController {
 
     private final RefreshTokenUseCase refreshTokenUseCase;
-    private final AuthMapper authMapper;
     private final LogoutUseCase logoutUseCase;
     private final CallbackUseCase callbackUseCase;
+    private final AppProperties appProperties;
 
-    @PostMapping("/callback")
-    public ResponseEntity<ResponseDto<TokenResponse>> callback(
-            @RequestBody CallbackRequest request,
-            HttpServletResponse response) {
+    @GetMapping("/callback")
+    public void callback(
+            @ModelAttribute CallbackRequest request,
+            HttpServletResponse response) throws IOException {
 
         AuthTokenCommand token = callbackUseCase.remoteCallback(new CallbackCommand(request.code()));
-        TokenResponse tokenDto = authMapper.toDto(token);
+        response.addHeader(HttpHeaders.SET_COOKIE, buildAccessCookie(token.accessToken()).toString());
         response.addHeader(HttpHeaders.SET_COOKIE, buildRefreshCookie(token.refreshToken()).toString());
-        return ResponseEntity.ok(ResponseDto.success(tokenDto));
+
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder
+                .fromUriString(appProperties.getClientUri() + "/callback/remote");
+
+        for (String role : token.roles()) {
+            uriBuilder.queryParam("role", role);
+        }
+
+        response.sendRedirect(uriBuilder.build().toUriString());
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<ResponseDto<TokenResponse>> refresh(
+    public ResponseEntity<ResponseDto<Set<String>>> refresh(
             @CookieValue(required = false) String refreshToken,
             HttpServletResponse response) {
 
         AuthTokenCommand token = refreshTokenUseCase.remoteRefresh(refreshToken);
-        TokenResponse tokenDto = authMapper.toDto(token);
+        response.addHeader(HttpHeaders.SET_COOKIE, buildAccessCookie(token.accessToken()).toString());
         response.addHeader(HttpHeaders.SET_COOKIE, buildRefreshCookie(token.refreshToken()).toString());
-        return ResponseEntity.ok(ResponseDto.success(tokenDto));
+        return ResponseEntity.ok(ResponseDto.success(token.roles()));
     }
 
     @PostMapping("/logout")
@@ -59,8 +69,24 @@ public class RemoteAuthController {
             HttpServletResponse response) {
 
         logoutUseCase.remoteLogout(refreshToken);
+        response.addHeader(HttpHeaders.SET_COOKIE, clearAccessCookie().toString());
         response.addHeader(HttpHeaders.SET_COOKIE, clearRefreshCookie().toString());
         return ResponseEntity.ok(ResponseDto.success(null));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<ResponseDto<Boolean>> getMe() {
+        return ResponseEntity.ok(ResponseDto.success(true));
+    }
+
+    private ResponseCookie buildAccessCookie(String accessToken) {
+        return ResponseCookie.from("accessToken", accessToken)
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(Duration.ofMinutes(15))
+                .sameSite(Cookie.SameSite.NONE.toString())
+                .build();
     }
 
     private ResponseCookie buildRefreshCookie(String refreshToken) {
@@ -69,6 +95,16 @@ public class RemoteAuthController {
                 .secure(true)
                 .path("/")
                 .maxAge(Duration.ofDays(1))
+                .sameSite(Cookie.SameSite.NONE.toString())
+                .build();
+    }
+
+    private ResponseCookie clearAccessCookie() {
+        return ResponseCookie.from("accessToken", "")
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(0)
                 .sameSite(Cookie.SameSite.NONE.toString())
                 .build();
     }

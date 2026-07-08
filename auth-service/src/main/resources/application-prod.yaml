@@ -30,7 +30,7 @@ keycloak:
   client-secret: ${KEYCLOAK_CLIENT_SECRET}
   admin-username: ${KEYCLOAK_ADMIN_USERNAME:admin}
   admin-password: ${KEYCLOAK_ADMIN_PASSWORD:admin}
-  redirect-uri: ${KEYCLOAK_REDIRECT_URI:http://localhost:4200/callback/remote}
+  redirect-uri: ${KEYCLOAK_REDIRECT_URI:http://localhost:8084/api/v1/auth/remote/callback}
 
 jwt:
   access-secret: ${JWT_ACCESS_SECRET}

@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import net.sf.jasperreports.engine.export.ooxml.JRXlsxExporter;
+import net.sf.jasperreports.engine.util.JRLoader;
 import net.sf.jasperreports.export.SimpleExporterInput;
 import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
 import net.sf.jasperreports.export.SimpleXlsxReportConfiguration;
@@ -29,17 +30,17 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class JasperReportService implements JasperReportUseCase {
 
-    private static final String COMPILED_REPORT_PATH = "report/account_report.jrxml";
+    private static final String COMPILED_REPORT_PATH = "report/account_report.jasper";
     private final UserClient userClient;
     private JasperReport compiledReport;
 
 
     @PostConstruct
-    void loadAndCompileReport() throws JRException {
+    void loadCompiledReport() throws JRException {
         try (InputStream is = new ClassPathResource(COMPILED_REPORT_PATH).getInputStream()) {
-            this.compiledReport = JasperCompileManager.compileReport(is);
+            this.compiledReport = (JasperReport) JRLoader.loadObject(is);
         } catch (IOException e) {
-            throw new JRException("Error loading report source file", e);
+            throw new JRException("Error loading compiled report file", e);
         }
     }
 

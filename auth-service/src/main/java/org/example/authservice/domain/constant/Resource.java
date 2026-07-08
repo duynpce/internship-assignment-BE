@@ -5,5 +5,7 @@ public enum Resource {
     ROLE,
     PERMISSION,
     ORDER,
-    PRODUCT
+    PRODUCT,
+    EXPORT,
+    PROMOTE
 }

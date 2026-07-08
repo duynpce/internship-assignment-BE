@@ -3,6 +3,7 @@ package org.example.authservice.domain.model;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class Role {
     private UUID id;
@@ -54,4 +55,6 @@ public class Role {
             this.permissions.remove(permission);
         }
     }
+
+
 }

@@ -10,6 +10,7 @@ import org.example.reportservice.infrastructure.web.dto.ResponseDto;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RestController;
@@ -29,23 +30,9 @@ public class ReportController {
 
     private final JasperReportUseCase  jasperReportUseCase;
 
-//    @GetMapping("/accounts/export")
-//    public ResponseEntity<ResponseDto<byte[]>> exportAccountReport(
-//            @Valid @ModelAttribute AccountReportFilter filter) throws Exception {
-//
-//
-//        ReportFilePropRes reportFilePropRes = jasperReportUseCase.generateAccountReport(filter);
-//
-//        HttpHeaders headers = new HttpHeaders();
-//        headers.setContentDisposition(ContentDisposition.attachment().filename(reportFilePropRes.fileName()).build());
-//
-//        return ResponseEntity.ok()
-//                .headers(headers)
-//                .contentType(reportFilePropRes.mediaType())
-//                .body(ResponseDto.success(reportFilePropRes.fileBytes()));
-//    }
 
     @GetMapping("/accounts/export")
+    @PreAuthorize("hasAuthority('EXPORT:DOWNLOAD_ALL')")
     public ResponseEntity<byte[]> exportAccountReport(
             @Valid @ModelAttribute AccountReportFilter filter) throws Exception {
 

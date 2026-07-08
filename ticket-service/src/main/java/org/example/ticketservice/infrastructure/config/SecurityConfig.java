@@ -1,9 +1,8 @@
-package org.example.userservice.infrastructure.config;
+package org.example.ticketservice.infrastructure.config;
 
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,7 +19,6 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
 import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.access.AccessDeniedHandler;
 
 import javax.crypto.SecretKey;
 import java.util.ArrayList;
@@ -45,8 +43,7 @@ public class SecurityConfig {
                         .bearerTokenResolver(bearerTokenResolver())
                         .jwt(jwt -> jwt
                                 .decoder(jwtDecoder())
-                                .jwtAuthenticationConverter(jwtAuthenticationConverter())))
-                .exceptionHandling(exceptions -> exceptions.accessDeniedHandler(accessDeniedHandler()));
+                                .jwtAuthenticationConverter(jwtAuthenticationConverter())));
         return http.build();
     }
 
@@ -74,13 +71,6 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AccessDeniedHandler accessDeniedHandler() {
-        return (request, response, accessDeniedException) -> {
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-        };
-    }
-
-    @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
         converter.setJwtGrantedAuthoritiesConverter(jwt -> {
@@ -95,7 +85,7 @@ public class SecurityConfig {
             }
 
             // Map 'permissions' claim → direct authority
-            // Format produced by auth-service: RESOURCE:ACTION  (e.g. USER:READ)
+            // Format produced by auth-service: RESOURCE:ACTION  (e.g. PROMOTE:READ_ALL)
             List<String> permissions = jwt.getClaimAsStringList("permissions");
             if (permissions != null) {
                 permissions.stream()

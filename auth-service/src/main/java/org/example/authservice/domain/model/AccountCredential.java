@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class AccountCredential {
     private UUID id ;
@@ -106,7 +107,7 @@ public class AccountCredential {
         return new Email(email);
     }
 
-    void validatePassword(String password)
+    private void validatePassword(String password)
     {
         if(password == null || password.isEmpty())
         {
@@ -122,5 +123,18 @@ public class AccountCredential {
         {
             throw new IllegalArgumentException("cannot change to your current password");
         }
+    }
+
+    public Set<String> extractRoleNames() {
+        return roles.stream()
+                .map(Role::getName)
+                .collect(Collectors.toSet());
+    }
+
+    public Set<String> extractPermissions() {
+        return roles.stream()
+                .flatMap(role -> role.getPermissions().stream())
+                .map(Permission::toAuthority)
+                .collect(Collectors.toSet());
     }
 }

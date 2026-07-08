@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/local")
@@ -32,18 +33,16 @@ public class LocalAuthController {
     private final LoginUseCase loginUseCase;
 
     @PostMapping("/login")
-    public ResponseEntity<ResponseDto<TokenResponse>> login(
+    public ResponseEntity<ResponseDto<Set<String>>> login(
             @Valid @RequestBody LoginRequest loginRequest,
             HttpServletResponse response
             ) {
 
         AuthTokenCommand authTokenCommand=loginUseCase.login(new LoginCommand(loginRequest.getUsername(), loginRequest.getPassword()));
 
-        TokenResponse tokenResponse = authMapper.toDto(authTokenCommand);
-
-
+        response.addHeader(HttpHeaders.SET_COOKIE, buildAccessCookie(authTokenCommand.accessToken()).toString());
         response.addHeader(HttpHeaders.SET_COOKIE, buildRefreshCookie(authTokenCommand.refreshToken()).toString());
-        return ResponseEntity.ok(ResponseDto.success(tokenResponse));
+        return ResponseEntity.ok(ResponseDto.success(authTokenCommand.roles()));
     }
 
     @PostMapping("/register")
@@ -54,14 +53,14 @@ public class LocalAuthController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<ResponseDto<TokenResponse>> refresh(
+    public ResponseEntity<ResponseDto<Set<String>>> refresh(
             @CookieValue(required = false) String refreshToken,
             HttpServletResponse response) {
 
         AuthTokenCommand token = refreshTokenUseCase.localRefresh(refreshToken);
-        TokenResponse tokenDto = authMapper.toDto(token);
+        response.addHeader(HttpHeaders.SET_COOKIE, buildAccessCookie(token.accessToken()).toString());
         response.addHeader(HttpHeaders.SET_COOKIE, buildRefreshCookie(token.refreshToken()).toString());
-        return ResponseEntity.ok(ResponseDto.success(tokenDto));
+        return ResponseEntity.ok(ResponseDto.success(token.roles()));
     }
 
     @PostMapping("/logout")
@@ -70,6 +69,7 @@ public class LocalAuthController {
             HttpServletResponse response) {
 
         logoutUseCase.localLogout(refreshToken);
+        response.addHeader(HttpHeaders.SET_COOKIE, clearAccessCookie().toString());
         response.addHeader(HttpHeaders.SET_COOKIE, clearRefreshCookie().toString());
         return ResponseEntity.ok(ResponseDto.success(null));
     }
@@ -91,9 +91,19 @@ public class LocalAuthController {
         return  "Hello World";
     }
 
-    @GetMapping("/test-auth")
-    public ResponseEntity<ResponseDto<String>> testAuth() {
-        return ResponseEntity.ok(ResponseDto.success("test auth"));
+    @GetMapping("/me")
+    public ResponseEntity<ResponseDto<Boolean>> getMe() {
+        return ResponseEntity.ok(ResponseDto.success(true));
+    }   
+
+    private ResponseCookie buildAccessCookie(String accessToken) {
+        return ResponseCookie.from("accessToken", accessToken)
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(Duration.ofMinutes(15))
+                .sameSite(Cookie.SameSite.STRICT.toString())
+                .build();
     }
 
     private ResponseCookie buildRefreshCookie(String refreshToken) {
@@ -102,6 +112,16 @@ public class LocalAuthController {
                 .secure(true)
                 .path("/")
                 .maxAge(Duration.ofDays(1))
+                .sameSite(Cookie.SameSite.STRICT.toString())
+                .build();
+    }
+
+    private ResponseCookie clearAccessCookie() {
+        return ResponseCookie.from("accessToken", "")
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(0)
                 .sameSite(Cookie.SameSite.STRICT.toString())
                 .build();
     }
