@@ -32,3 +32,12 @@ server:
   port: 8083
   servlet:
     context-path: /api/v1/tickets
+
+app:
+  auth-service-url: ${AUTH_SERVICE_URL:http://auth-service:8084}
+
+camunda:
+  bpm:
+    generic-properties:
+      properties:
+        historyTimeToLive: 30  # days, adjust as needed

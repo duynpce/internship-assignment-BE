@@ -149,6 +149,7 @@ services:
       - SPRING_DATASOURCE_USERNAME=myuser
       - SPRING_DATASOURCE_PASSWORD=secret
       - JWT_ACCESS_SECRET=bXktYWNjZXNzLXNlY3JldC1rZXktZm9yLXNob3BwaW5nLWFwcC0yNTY=
+      - AUTH_SERVICE_URL=http://auth-service:8084
     ports:
       - "8083:8083"
     depends_on:
