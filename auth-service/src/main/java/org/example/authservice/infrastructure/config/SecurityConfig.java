@@ -2,6 +2,7 @@ package org.example.authservice.infrastructure.config;
 
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +22,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
+import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
@@ -58,6 +61,7 @@ public class SecurityConfig {
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt.decoder(jwtDecoder()))
                         .authenticationEntryPoint(resourceServerAuthenticationEntryPoint())
+                        .bearerTokenResolver(bearerTokenResolver())
                 )
                 .logout(logout -> logout
                         .logoutUrl("/api/v1/auth/logout")
@@ -84,6 +88,22 @@ public class SecurityConfig {
 
             response.setContentType("application/json");
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        };
+    }
+
+    @Bean
+    public BearerTokenResolver bearerTokenResolver() {
+        return request -> {
+            // 1. try cookie first
+            if (request.getCookies() != null) {
+                for (Cookie cookie : request.getCookies()) {
+                    if ("accessToken".equals(cookie.getName())) {
+                        return cookie.getValue();
+                    }
+                }
+            }
+            // 2. fallback to Authorization header
+            return new DefaultBearerTokenResolver().resolve(request);
         };
     }
 

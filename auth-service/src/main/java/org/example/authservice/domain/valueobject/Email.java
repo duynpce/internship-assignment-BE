@@ -15,20 +15,16 @@ public class Email {
     }
 
     private String cleanAndValidateEmail(String email) {
-        // 1. Check null or empty
         if (email == null || email.isBlank()) {
             throw new IllegalArgumentException("Email address cannot be null or empty.");
         }
 
-        // 2. Normalize: Trim spaces and convert to lowercase
         String cleanedEmail = email.strip().toLowerCase();
 
-        // 3. Validate format using regex
         if (!EMAIL_PATTERN.matcher(cleanedEmail).matches()) {
             throw new IllegalArgumentException("Invalid email format: " + email);
         }
 
-        // 4. Max length boundary check for database safety
         if (cleanedEmail.length() > 255) {
             throw new IllegalArgumentException("Email address must not exceed 255 characters.");
         }

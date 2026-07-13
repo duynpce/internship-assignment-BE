@@ -34,15 +34,15 @@ public class RefreshService implements RefreshTokenUseCase {
     public AuthTokenCommand remoteRefresh(String authRefreshToken) {
         validateToken(authRefreshToken);
         AuthToken stored = loadToken(authRefreshToken);
-        String username = tokenGeneratorClient.extractUsernameFromRefreshToken(authRefreshToken);
-        UUID userId     = tokenGeneratorClient.extractUserIdFromRefreshToken(authRefreshToken);
+        String email = tokenGeneratorClient.extractEmailFromRefreshToken(authRefreshToken);
+        UUID userId  = tokenGeneratorClient.extractUserIdFromRefreshToken(authRefreshToken);
 
         if (stored == null || !stored.getAuthRefreshToken().equals(authRefreshToken)) {
             throw new UnauthorizedException("You are not logged in");
         }
 
-        KeycloakTokenCommand keycloakSession = keycloakClient.refresh(stored.getKeycloakRefreshToken(), username);
-        return saveNewToken(userId, username, keycloakSession, authRefreshToken);
+        KeycloakTokenCommand keycloakSession = keycloakClient.refresh(stored.getKeycloakRefreshToken(), email);
+        return saveNewToken(userId, email, keycloakSession, authRefreshToken);
     }
 
     @Override
@@ -50,14 +50,14 @@ public class RefreshService implements RefreshTokenUseCase {
     public AuthTokenCommand localRefresh(String authRefreshToken) {
         validateToken(authRefreshToken);
         AuthToken stored = loadToken(authRefreshToken);
-        String username = tokenGeneratorClient.extractUsernameFromRefreshToken(authRefreshToken);
-        UUID userId     = tokenGeneratorClient.extractUserIdFromRefreshToken(authRefreshToken);
+        String email = tokenGeneratorClient.extractEmailFromRefreshToken(authRefreshToken);
+        UUID userId  = tokenGeneratorClient.extractUserIdFromRefreshToken(authRefreshToken);
 
         if (stored == null || !stored.getAuthRefreshToken().equals(authRefreshToken)) {
             throw new UnauthorizedException("You are not logged in");
         }
 
-        return saveNewToken(userId, username, null, authRefreshToken);
+        return saveNewToken(userId, email, null, authRefreshToken);
     }
 
 
@@ -77,11 +77,11 @@ public class RefreshService implements RefreshTokenUseCase {
 
 
 
-    private AuthTokenCommand saveNewToken(UUID userId, String username, KeycloakTokenCommand keycloakSession, String authRefreshToken) {
+    private AuthTokenCommand saveNewToken(UUID userId, String email, KeycloakTokenCommand keycloakSession, String authRefreshToken) {
         Set<String> roles       = tokenGeneratorClient.extractRolesFromRefreshToken(authRefreshToken);
         Set<String> permissions = tokenGeneratorClient.extractPermissionsFromRefreshToken(authRefreshToken);
 
-        AuthTokenCommand newAuthToken = tokenGeneratorClient.generate(username, userId, roles, permissions);
+        AuthTokenCommand newAuthToken = tokenGeneratorClient.generate(email, userId, roles, permissions);
 
         AuthToken updatedRecord = new AuthToken(
                 userId,
