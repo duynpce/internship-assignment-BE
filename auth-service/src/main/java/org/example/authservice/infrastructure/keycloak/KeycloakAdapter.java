@@ -41,7 +41,7 @@ public class KeycloakAdapter implements KeycloakClient {
     }
 
     @Override
-    public KeycloakTokenCommand refresh(String keycloakRefreshToken, String username) {
+    public KeycloakTokenCommand refresh(String keycloakRefreshToken, String email) {
         MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
         form.add("grant_type",    "refresh_token");
         form.add("client_id",     props.getClientId());
@@ -50,8 +50,9 @@ public class KeycloakAdapter implements KeycloakClient {
 
         KeycloakTokenResponse response = keycloakHttpClient.token(props.getRealm(), form);
         UUID userId = tokenGeneratorClient.extractUserIdFromKeycloakAccessToken(response.getAccessToken());
+        String refreshedEmail = tokenGeneratorClient.extractEmailFromKeycloakAccessToken(response.getAccessToken());
 
-        return keycloakMapper.toKeycloakSession(response, username, userId);
+        return keycloakMapper.toKeycloakSession(response, refreshedEmail, userId);
     }
 
     @Override
@@ -65,10 +66,10 @@ public class KeycloakAdapter implements KeycloakClient {
 
         KeycloakTokenResponse response = keycloakHttpClient.token(props.getRealm(), form);
 
-        UUID userId   = tokenGeneratorClient.extractUserIdFromKeycloakAccessToken(response.getAccessToken());
-        String username = tokenGeneratorClient.extractUsernameFromKeycloakAccessToken(response.getAccessToken());
+        UUID userId = tokenGeneratorClient.extractUserIdFromKeycloakAccessToken(response.getAccessToken());
+        String email = tokenGeneratorClient.extractEmailFromKeycloakAccessToken(response.getAccessToken());
 
-        return keycloakMapper.toKeycloakSession(response, username, userId);
+        return keycloakMapper.toKeycloakSession(response, email, userId);
     }
 
     @Override

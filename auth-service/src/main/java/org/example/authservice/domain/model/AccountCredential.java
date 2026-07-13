@@ -52,7 +52,7 @@ public class AccountCredential {
     }
 
     public void setUsername(String username) {
-        if(username == null || username.length() < 8){
+        if(username != null && username.length() < 8){
             throw new IllegalArgumentException("username length should be at least 8 characters");
         }
         this.username = username;
@@ -107,9 +107,13 @@ public class AccountCredential {
         return new Email(email);
     }
 
-    private void validatePassword(String password)
-    {
-        if(password == null || password.isEmpty())
+    private void validatePassword(String password) {
+        // if not have username --> third-party account --> null password
+        if(this.username ==null){
+            return;
+        }
+
+        if((password == null || password.isEmpty()))
         {
             throw new IllegalArgumentException("Password cannot be null or empty.");
         }

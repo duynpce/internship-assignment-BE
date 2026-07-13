@@ -10,6 +10,7 @@ import org.example.authservice.infrastructure.web.data.springdata.SpringDataAcco
 import org.example.authservice.infrastructure.web.entity.AccountCredentialEntity;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -28,10 +29,9 @@ public class AccountCredentialRepositoryAdapter implements AccountCredentialRepo
     }
 
     @Override
-    public AccountCredential findById(UUID id) {
+    public Optional<AccountCredential> findById(UUID id) {
         return springDataRepo.findById(id)
-                .map(mapper::toDomain)
-                .orElseThrow(() -> new UnauthorizedException("Account credential not found for id: " + id));
+                .map(mapper::toDomain);
     }
 
     @Override
@@ -49,11 +49,17 @@ public class AccountCredentialRepositoryAdapter implements AccountCredentialRepo
     }
 
     @Override
-    public AccountCredential findByUsername(String username) {
+    public Optional<AccountCredential> findByUsername(String username) {
         return springDataRepo.findByUsername(username)
-                .map(mapper::toDomain)
-                .orElseThrow(() -> new NotFoundException("Account credential not found for username: " + username));
+                .map(mapper::toDomain);
     }
+
+    @Override
+    public Optional<AccountCredential> findByEmail(String email) {
+        return springDataRepo.findByEmail(email)
+                .map(mapper::toDomain);
+    }
+
 
     @Override
     public boolean existsByUsername(String username) {

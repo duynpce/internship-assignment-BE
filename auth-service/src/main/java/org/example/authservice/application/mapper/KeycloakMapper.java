@@ -11,9 +11,6 @@ import java.util.UUID;
 
 public interface KeycloakMapper {
 
-    /** Local – email not carried. */
-    KeycloakTokenCommand toKeycloakSession(KeycloakTokenResponse response, String username, UUID userId);
-
-    /** Remote – email from Keycloak access-token claim. */
-    KeycloakTokenCommand toKeycloakSessionWithEmail(KeycloakTokenResponse response, String username, UUID userId, String email);
+    /** Maps a Keycloak token response to a session command using email as the principal identifier. */
+    KeycloakTokenCommand toKeycloakSession(KeycloakTokenResponse response, String email, UUID userId);
 }

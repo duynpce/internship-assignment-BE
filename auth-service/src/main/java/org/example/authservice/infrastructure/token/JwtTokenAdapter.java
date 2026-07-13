@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 @Component
-public class    JwtTokenAdapter implements TokenGeneratorClient {
+public class JwtTokenAdapter implements TokenGeneratorClient {
 
     private static final String CLAIM_USER_ID = "userId";
     private static final String CLAIM_ROLES = "roles";
@@ -72,15 +72,15 @@ public class    JwtTokenAdapter implements TokenGeneratorClient {
         validate(token, getRefreshKey(), "Refresh token");
     }
 
-    // ── Extract username ─────────────────────────────────────────────────────
+    // ── Extract email ─────────────────────────────────────────────────────
 
     @Override
-    public String extractUsernameFromAccessToken(String token) {
+    public String extractEmailFromAccessToken(String token) {
         return extractClaim(token, Claims::getSubject, getAccessKey());
     }
 
     @Override
-    public String extractUsernameFromRefreshToken(String token) {
+    public String extractEmailFromRefreshToken(String token) {
         return extractClaim(token, Claims::getSubject, getRefreshKey());
     }
 
@@ -105,8 +105,8 @@ public class    JwtTokenAdapter implements TokenGeneratorClient {
     }
 
     @Override
-    public String extractUsernameFromKeycloakAccessToken(String keycloakAccessToken) {
-        return keycloakDecoder.decode(keycloakAccessToken).getClaimAsString("preferred_username");
+    public String extractEmailFromKeycloakAccessToken(String keycloakAccessToken) {
+        return keycloakDecoder.decode(keycloakAccessToken).getClaimAsString("email");
     }
 
     @Override
@@ -142,7 +142,6 @@ public class    JwtTokenAdapter implements TokenGeneratorClient {
         return Jwts.builder()
                 .subject(username)
                 .claim(CLAIM_USER_ID, userId.toString())
-                .claim(CLAIM_ROLES, normalizeClaims(roles))
                 .claim(CLAIM_PERMISSIONS, normalizeClaims(permissions))
                 .issuedAt(new Date(now))
                 .expiration(new Date(now + expirationMs))

@@ -50,7 +50,8 @@ public class SecurityConfig {
                                 "/local/test-auth",
                                  "/api/v1/reports/**",
                                 "/api/v1/auth/*/me",
-                                "/api/v1/users/accounts/report"
+                                "/api/v1/users/accounts/report",
+                                "/api/v1/tickets/"
                         )
                         .authenticated()
 

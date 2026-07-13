@@ -1,8 +1,9 @@
-package org.example.authservice.infrastructure.mapper.mapstruct;
+package org.example.authservice.infrastructure.mapper;
 
 import org.example.authservice.application.command.AuthTokenCommand;
 import org.example.authservice.application.command.CreateCredentialAccountCommand;
 import org.example.authservice.application.command.RegisterCommand;
+import org.example.authservice.application.mapper.AuthMapper;
 import org.example.authservice.domain.model.AccountCredential;
 import org.example.authservice.domain.model.AuthToken;
 import org.example.authservice.domain.model.Permission;
@@ -20,7 +21,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 
 @Mapper(componentModel = "spring")
-public interface AuthMapperMapstruct {
+public interface AuthMapperMapstruct extends AuthMapper {
     TokenResponse toDto(AuthTokenCommand authTokenCommand);
     AuthTokenEntity toEntity(AuthToken domain);
     AuthToken toDomain(AuthTokenEntity entity);

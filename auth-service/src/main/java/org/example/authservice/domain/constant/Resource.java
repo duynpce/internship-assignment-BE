@@ -7,5 +7,6 @@ public enum Resource {
     ORDER,
     PRODUCT,
     EXPORT,
-    PROMOTE
+    PROMOTE,
+    TICKET,
 }

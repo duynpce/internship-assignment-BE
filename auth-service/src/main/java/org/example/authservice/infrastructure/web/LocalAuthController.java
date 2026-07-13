@@ -5,7 +5,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.authservice.application.command.AuthTokenCommand;
-import org.example.authservice.application.command.CallbackCommand;
 import org.example.authservice.application.command.LoginCommand;
 import org.example.authservice.application.mapper.AuthMapper;
 import org.example.authservice.application.usecase.*;
@@ -14,6 +13,7 @@ import org.springframework.boot.web.server.Cookie;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
@@ -31,6 +31,7 @@ public class LocalAuthController {
     private final RegisterUseCase registerUseCase;
     private final ExistUseCase existUseCase;
     private final LoginUseCase loginUseCase;
+    private final PromoteUseCase promoteUseCase;
 
     @PostMapping("/login")
     public ResponseEntity<ResponseDto<Set<String>>> login(
@@ -53,14 +54,14 @@ public class LocalAuthController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<ResponseDto<Set<String>>> refresh(
+    public ResponseEntity<ResponseDto<Void>> refresh(
             @CookieValue(required = false) String refreshToken,
             HttpServletResponse response) {
 
         AuthTokenCommand token = refreshTokenUseCase.localRefresh(refreshToken);
         response.addHeader(HttpHeaders.SET_COOKIE, buildAccessCookie(token.accessToken()).toString());
         response.addHeader(HttpHeaders.SET_COOKIE, buildRefreshCookie(token.refreshToken()).toString());
-        return ResponseEntity.ok(ResponseDto.success(token.roles()));
+        return ResponseEntity.ok(ResponseDto.success(null));
     }
 
     @PostMapping("/logout")
@@ -86,9 +87,13 @@ public class LocalAuthController {
         return ResponseEntity.ok(ResponseDto.success(existUseCase.existsByEmail(email)));
     }
 
-    @GetMapping("/hello")
-    public String hello() {
-        return  "Hello World";
+
+    @PreAuthorize("hasAuthority('PROMOTE:WRITE_ALL')")
+    @PostMapping("/promote/{userId}")
+    public ResponseEntity<ResponseDto<Void>> promoteToContributor(@PathVariable("userId") String userId) {
+        promoteUseCase.promoteToContributor(userId);
+
+        return ResponseEntity.ok(ResponseDto.success(null, "User promoted to contributor successfully"));
     }
 
     @GetMapping("/me")

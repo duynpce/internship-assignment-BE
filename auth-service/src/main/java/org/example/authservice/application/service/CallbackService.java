@@ -9,20 +9,22 @@ import org.example.authservice.application.command.CallbackCommand;
 import org.example.authservice.application.command.KeycloakTokenCommand;
 import org.example.authservice.application.repository.AccountCredentialRepository;
 import org.example.authservice.application.repository.AuthTokenRepository;
+import org.example.authservice.application.repository.RoleRepository;
 import org.example.authservice.application.usecase.CallbackUseCase;
+import org.example.authservice.domain.constant.AccountStatus;
+import org.example.authservice.domain.exception.NotFoundException;
 import org.example.authservice.domain.model.AccountCredential;
 import org.example.authservice.domain.model.AuthToken;
-import org.example.authservice.domain.model.Permission;
-import org.example.authservice.domain.model.Role;
+import org.example.authservice.domain.valueobject.Email;
 import org.example.authservice.infrastructure.prop.JwtProperties;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +36,7 @@ public class CallbackService implements CallbackUseCase {
     private final AuthTokenRepository authTokenRepository;
     private final AccountCredentialRepository accountCredentialRepository;
     private final JwtProperties jwtProperties;
+    private final RoleRepository roleRepository;
 
 
     @Override
@@ -43,28 +46,42 @@ public class CallbackService implements CallbackUseCase {
 
         KeycloakTokenCommand keycloakSession = keycloakClient.exchangeCode(command.code());
         UUID keycloakUserId = keycloakSession.userId();
-        String username = keycloakSession.username();
+        String email = keycloakSession.email();
 
-        AccountCredential accountCredential = accountCredentialRepository.findByUsername(username);
+        Optional<AccountCredential> accountCredentialOptional = accountCredentialRepository.findByEmail(email);
+        AccountCredential accountCredential = accountCredentialOptional.orElse(null);
 
-        //if keycloak id not exist then save it
-        if(accountCredential.getKeycloakId() == null){
+        //if there is no account with email --> sync it in our db
+        if(accountCredentialOptional.isEmpty()) {
+            accountCredential = new AccountCredential();
+            accountCredential.setEmail(new Email(email));
             accountCredential.setKeycloakId(keycloakUserId);
-            accountCredentialRepository.save(accountCredential);
+            accountCredential.setStatus(AccountStatus.ACTIVE);
+            accountCredential.setRoles(Set.of(roleRepository.getDefaultRole().orElseThrow(() -> new NotFoundException("Default role not found"))));
+            accountCredential = accountCredentialRepository.save(accountCredential);
         }
+        //if keycloak id not exist then save it
+        else{
+            if(accountCredential.getKeycloakId() == null){
+                accountCredential.setKeycloakId(keycloakUserId);
+                accountCredential = accountCredentialRepository.save(accountCredential);
+            }
+
+        }
+
 
         Set<String> roles = accountCredential.extractRoleNames();
         Set<String> permissions = accountCredential.extractPermissions();
 
-        return buildAndSaveAuthToken(keycloakSession.username(), accountCredential.getId(), keycloakSession.refreshToken(), roles, permissions);
+        return buildAndSaveAuthToken(keycloakSession.email(), accountCredential.getId(), keycloakSession.refreshToken(), roles, permissions);
     }
 
 
-    private AuthTokenCommand buildAndSaveAuthToken(String username, UUID userId,
+    private AuthTokenCommand buildAndSaveAuthToken(String email, UUID userId,
                                                     String keycloakRefreshToken,
                                                     Set<String> roles,
                                                     Set<String> permissions) {
-        AuthTokenCommand authToken = tokenGeneratorClient.generate(username, userId, roles, permissions);
+        AuthTokenCommand authToken = tokenGeneratorClient.generate(email, userId, roles, permissions);
 
         AuthToken authTokenRecord = new AuthToken(
                 userId,

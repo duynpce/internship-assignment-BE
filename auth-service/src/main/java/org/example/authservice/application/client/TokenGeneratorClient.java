@@ -14,8 +14,8 @@ public interface TokenGeneratorClient {
     void validateAccessToken(String token);
     void validateRefreshToken(String token);
 
-    String extractUsernameFromAccessToken(String accessToken);
-    String extractUsernameFromRefreshToken(String refreshToken);
+    String extractEmailFromAccessToken(String accessToken);
+    String extractEmailFromRefreshToken(String refreshToken);
     UUID extractUserIdFromAccessToken(String accessToken);
     UUID extractUserIdFromRefreshToken(String refreshToken);
     Set<String> extractRolesFromAccessToken(String accessToken);
@@ -23,6 +23,6 @@ public interface TokenGeneratorClient {
     Set<String> extractPermissionsFromRefreshToken(String refreshToken);
 
     UUID extractUserIdFromKeycloakAccessToken(String keycloakAccessToken);
-    String extractUsernameFromKeycloakAccessToken(String keycloakAccessToken);
+    String extractEmailFromKeycloakAccessToken(String keycloakAccessToken);
 
 }
