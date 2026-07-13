@@ -2,15 +2,17 @@ package org.example.authservice.application.repository;
 
 import org.example.authservice.domain.model.AccountCredential;
 
+import java.util.Optional;
 import java.util.UUID;
 
 public interface AccountCredentialRepository {
     AccountCredential save(AccountCredential domain);
 
-    AccountCredential findById(UUID id);
+    Optional<AccountCredential> findById(UUID id);
     AccountCredential findByIdWithRolesAndPermissions(UUID id);
     AccountCredential findByKeycloakIdWithRolesAndPermissions(UUID keycloakId);
-    AccountCredential findByUsername(String username);
+  Optional<AccountCredential> findByUsername(String username);
+    Optional<AccountCredential> findByEmail(String email);
 
 
     boolean existsByUsername(String username);

@@ -53,14 +53,14 @@ public class RemoteAuthController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<ResponseDto<Set<String>>> refresh(
+    public ResponseEntity<ResponseDto<Void>> refresh(
             @CookieValue(required = false) String refreshToken,
             HttpServletResponse response) {
 
         AuthTokenCommand token = refreshTokenUseCase.remoteRefresh(refreshToken);
         response.addHeader(HttpHeaders.SET_COOKIE, buildAccessCookie(token.accessToken()).toString());
         response.addHeader(HttpHeaders.SET_COOKIE, buildRefreshCookie(token.refreshToken()).toString());
-        return ResponseEntity.ok(ResponseDto.success(token.roles()));
+        return ResponseEntity.ok(ResponseDto.success(null));
     }
 
     @PostMapping("/logout")

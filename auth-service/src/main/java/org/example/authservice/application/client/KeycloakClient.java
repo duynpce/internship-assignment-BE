@@ -6,7 +6,7 @@ import org.example.authservice.application.command.KeycloakTokenCommand;
 import org.example.authservice.application.command.UpdateKeycloakUserCommand;
 
 public interface KeycloakClient {
-    KeycloakTokenCommand refresh(String keycloakRefreshToken, String username);
+    KeycloakTokenCommand refresh(String keycloakRefreshToken, String email);
     void logout(String refreshToken);
     KeycloakTokenCommand exchangeCode(String code);
     void createUser(CreateKeycloakUserCommand command);
