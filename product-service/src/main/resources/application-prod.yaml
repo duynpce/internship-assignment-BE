@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: product-service
+
+  data:
+    mongodb:
+      uri: ${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/product_db}
+
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          secret: ${JWT_ACCESS_SECRET}
+
+server:
+  port: 8085
+  servlet:
+    context-path: /api/v1/products
+
+gcp:
+  bucket-name: ${GCP_BUCKET_NAME:my-product-img}
+  config-path: ${GCP_CONFIG_PATH}`
+
+jwt:
+  access-secret: ${JWT_ACCESS_SECRET}
