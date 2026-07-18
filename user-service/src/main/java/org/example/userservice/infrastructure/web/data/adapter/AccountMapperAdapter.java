@@ -1,4 +1,4 @@
-package org.example.userservice.infrastructure.data.adapter;
+package org.example.userservice.infrastructure.web.data.adapter;
 
 import lombok.RequiredArgsConstructor;
 import org.example.userservice.application.command.CreateAccountCommand;

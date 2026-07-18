@@ -1,4 +1,4 @@
-package org.example.userservice.infrastructure.data.adapter;
+package org.example.userservice.infrastructure.web.data.adapter;
 
 import lombok.RequiredArgsConstructor;
 import org.example.userservice.application.command.PageCommand;
@@ -6,8 +6,8 @@ import org.example.userservice.application.criteria.AccountSearchCriteria;
 import org.example.userservice.application.mapper.AccountMapper;
 import org.example.userservice.application.repository.AccountRepository;
 import org.example.userservice.domain.model.Account;
-import org.example.userservice.infrastructure.data.specification.AccountSpecification;
-import org.example.userservice.infrastructure.data.springdata.SpringDataAccountRepository;
+import org.example.userservice.infrastructure.web.data.specification.AccountSpecification;
+import org.example.userservice.infrastructure.web.data.springdata.SpringDataAccountRepository;
 import org.example.userservice.infrastructure.web.entity.AccountEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
