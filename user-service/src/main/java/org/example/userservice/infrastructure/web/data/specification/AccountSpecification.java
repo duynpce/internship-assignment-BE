@@ -1,4 +1,4 @@
-package org.example.userservice.infrastructure.data.specification;
+package org.example.userservice.infrastructure.web.data.specification;
 
 import jakarta.persistence.criteria.Predicate;
 import org.example.userservice.application.criteria.AccountSearchCriteria;
